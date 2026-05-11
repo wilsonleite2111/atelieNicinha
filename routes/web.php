@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,8 @@ Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
         Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+
+        Route::resource('products', ProductController::class)->except(['show']);
     });
 
 Route::middleware(['auth'])->group(function () {

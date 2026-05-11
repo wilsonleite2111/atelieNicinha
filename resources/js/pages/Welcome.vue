@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
-import { login, register } from '@/routes';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
+import { login, logout, register } from '@/routes';
 
 withDefaults(defineProps<{ canRegister: boolean }>(), { canRegister: true });
 
@@ -113,26 +113,28 @@ const filteredProducts = () =>
                     <a href="#sobre" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Sobre</a>
                     <a href="#contato" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Contato</a>
                     <template v-if="$page.props.auth.user">
-                        <Link
-                            href="/dashboard"
-                            class="rounded-full border border-[#7C5C3A] px-5 py-2 text-xs text-[#7C5C3A] transition-all hover:bg-[#7C5C3A] hover:text-white"
-                        >
-                            Painel
-                        </Link>
+                        <Form v-bind="logout.form()">
+                            <button
+                                type="submit"
+                                class="rounded-full border border-[#7C5C3A] px-5 py-2 text-xs text-[#7C5C3A] transition-all hover:bg-[#7C5C3A] hover:text-white"
+                            >
+                                Sair
+                            </button>
+                        </Form>
                     </template>
                     <template v-else>
                         <Link
-                            :href="login()"
+                            :href="login().url"
                             class="text-xs transition-colors hover:text-[#7C5C3A]"
                         >
                             Entrar
                         </Link>
                         <Link
                             v-if="canRegister"
-                            :href="register()"
+                            :href="register().url"
                             class="rounded-full bg-[#7C5C3A] px-5 py-2 text-xs text-white transition-all hover:bg-[#5C4028]"
                         >
-                            Cadastrar
+                            Cadastre-se
                         </Link>
                     </template>
                 </div>

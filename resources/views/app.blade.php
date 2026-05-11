@@ -22,7 +22,7 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(1 0 0);
+                background-color: hsl(40 33% 97%);
             }
 
             html.dark {
@@ -33,6 +33,10 @@
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
 
         @fonts
 

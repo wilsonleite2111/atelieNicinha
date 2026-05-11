@@ -1,3 +1,63 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Commands
+
+```bash
+# Start development (PHP + Vite + queue + logs)
+composer run dev
+
+# Run all tests
+php artisan test --compact
+
+# Run a single test file
+php artisan test --compact tests/Feature/Teams/TeamTest.php
+
+# Run tests matching a name
+php artisan test --compact --filter=testName
+
+# Lint & format PHP (run after any PHP change)
+vendor/bin/pint --dirty --format agent
+
+# Regenerate Wayfinder TypeScript route functions
+php artisan wayfinder:generate
+
+# Build frontend assets
+npm run build
+```
+
+## Architecture
+
+**atélieNicinha** is a team-centric multi-tenant SPA built on Laravel 13 + Inertia.js v3 + Vue 3.
+
+### Team-Based Routing
+
+Every authenticated route is team-scoped via `/{current_team}/dashboard`. The `SetTeamUrlDefaults` middleware injects the team slug into all named route generations. The `EnsureTeamMembership` middleware guards protected routes to confirm the authenticated user belongs to the current team.
+
+### Authentication Flow
+
+Fortify handles all auth. The flow is: login → optional 2FA challenge → email verification → redirect to team dashboard. Custom response contracts in `app/Responses/` override Fortify's default redirects to respect the team URL structure.
+
+### Shared Inertia Props
+
+`HandleInertiaRequests` middleware shares auth user (with current team & roles), flash messages, and available teams to every Inertia page. Flash messages are read by `lib/flashToast.ts` and displayed via Vue Sonner.
+
+### Key Model Relationships
+
+- `User` → `hasManyThrough` teams via `team_members` pivot (role column), plus `current_team_id`
+- `Team` → soft-deletes, auto-generates unique slug via `GeneratesUniqueTeamSlugs` trait
+- `Membership` → pivot model with `TeamRole` enum (Owner, Member)
+- `TeamInvitation` → stores invitation code + expiry, triggers `TeamInvitation` notification email
+
+### UI Component Library
+
+Headless primitives come from **Reka-UI**; styled wrappers live in `resources/js/components/ui/`. Do not modify Reka-UI packages directly. Check existing UI components before creating new ones.
+
+### Media Library
+
+File uploads use **Spatie Media Library** (`spatie/laravel-medialibrary`). Add media collections to models via `HasMedia` + `InteractsWithMedia` traits.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

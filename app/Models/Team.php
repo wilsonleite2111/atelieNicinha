@@ -82,6 +82,16 @@ class Team extends Model
     }
 
     /**
+     * Get all products for this team.
+     *
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
