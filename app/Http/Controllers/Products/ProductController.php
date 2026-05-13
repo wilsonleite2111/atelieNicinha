@@ -10,6 +10,7 @@ use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,12 +59,19 @@ class ProductController extends Controller
     {
         Gate::authorize('create', [Product::class, $current_team]);
 
-        $product = $current_team->products()->create(
-            $request->safe()->except(['images', 'delete_images'])
-        );
+        try {
+            $product = $current_team->products()->create(
+                $request->safe()->except(['images', 'delete_images'])
+            );
 
-        foreach ($request->file('images', []) as $file) {
-            $product->addMedia($file)->toMediaCollection('images');
+            foreach ($request->file('images', []) as $file) {
+                $product->addMedia($file)->toMediaCollection('images');
+            }
+        } catch (\Throwable $e) {
+            Log::error('Product store failed', ['exception' => $e]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Erro ao salvar o produto. Tente novamente.']);
+
+            return back();
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Product created.')]);
@@ -99,15 +107,22 @@ class ProductController extends Controller
 
         Gate::authorize('update', $product);
 
-        $product->update($request->safe()->except(['images', 'delete_images']));
+        try {
+            $product->update($request->safe()->except(['images', 'delete_images']));
 
-        $product->media()
-            ->whereIn('id', $request->input('delete_images', []))
-            ->get()
-            ->each(fn ($m) => $m->delete());
+            $product->media()
+                ->whereIn('id', $request->input('delete_images', []))
+                ->get()
+                ->each(fn ($m) => $m->delete());
 
-        foreach ($request->file('images', []) as $file) {
-            $product->addMedia($file)->toMediaCollection('images');
+            foreach ($request->file('images', []) as $file) {
+                $product->addMedia($file)->toMediaCollection('images');
+            }
+        } catch (\Throwable $e) {
+            Log::error('Product update failed', ['exception' => $e]);
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Erro ao atualizar o produto. Tente novamente.']);
+
+            return back();
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Product updated.')]);

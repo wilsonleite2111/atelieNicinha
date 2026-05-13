@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { Toaster } from '@/components/ui/sonner';
 import { home } from '@/routes';
 
 defineProps<{
@@ -79,4 +80,5 @@ defineProps<{
             </div>
         </div>
     </div>
+    <Toaster />
 </template>

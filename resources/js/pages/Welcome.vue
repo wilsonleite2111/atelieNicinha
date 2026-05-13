@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref, computed } from 'vue';
+import { Toaster } from '@/components/ui/sonner';
 import { login, logout, register } from '@/routes';
 import { show as productShow } from '@/routes/products/public';
 
@@ -24,12 +25,21 @@ const props = withDefaults(
 
 const isScrolled = ref(false);
 const activeCategory = ref('todos');
+const navRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
     window.addEventListener('scroll', () => {
         isScrolled.value = window.scrollY > 50;
     });
 });
+
+const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (!element) return;
+    const navHeight = navRef.value?.offsetHeight ?? 80;
+    const top = element.getBoundingClientRect().top + window.scrollY - navHeight;
+    window.scrollTo({ top, behavior: 'smooth' });
+};
 
 const formatPrice = (price: string) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(price));
@@ -50,6 +60,7 @@ const filteredProducts = computed(() => props.products);
     <div class="min-h-screen bg-[#FAF8F5] font-['Jost',sans-serif] text-[#2C2416]">
         <!-- NAV -->
         <nav
+            ref="navRef"
             :class="[
                 'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
                 isScrolled ? 'bg-[#FAF8F5]/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5',
@@ -63,9 +74,9 @@ const filteredProducts = computed(() => props.products);
                     <span class="text-[10px] tracking-[0.25em] uppercase text-[#A8896C]">Resina & Macramê</span>
                 </div>
                 <div class="flex items-center gap-6 text-sm tracking-widest uppercase text-[#5C4A32]">
-                    <a href="#produtos" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Produtos</a>
-                    <a href="#sobre" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Sobre</a>
-                    <a href="#contato" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Contato</a>
+                    <a href="#produtos" class="hidden transition-colors hover:text-[#7C5C3A] md:block" @click.prevent="scrollToSection('produtos')">Produtos</a>
+                    <a href="#sobre" class="hidden transition-colors hover:text-[#7C5C3A] md:block" @click.prevent="scrollToSection('sobre')">Sobre</a>
+                    <a href="#contato" class="hidden transition-colors hover:text-[#7C5C3A] md:block" @click.prevent="scrollToSection('contato')">Contato</a>
                     <template v-if="$page.props.auth.user">
                         <Link
                             v-if="$page.props.currentTeam"
@@ -122,12 +133,14 @@ const filteredProducts = computed(() => props.products);
                         <a
                             href="#produtos"
                             class="rounded-full bg-[#7C5C3A] px-8 py-4 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
+                            @click.prevent="scrollToSection('produtos')"
                         >
                             Ver Coleção
                         </a>
                         <a
                             href="#sobre"
                             class="rounded-full border border-[#7C5C3A] px-8 py-4 text-sm tracking-widest uppercase text-[#7C5C3A] transition-all duration-300 hover:bg-[#7C5C3A]/10"
+                            @click.prevent="scrollToSection('sobre')"
                         >
                             Nosso Ateliê
                         </a>
@@ -310,7 +323,7 @@ const filteredProducts = computed(() => props.products);
         </section>
 
         <!-- CTA -->
-        <section class="bg-[#7C5C3A] py-24 text-white">
+        <section id="contato" class="bg-[#7C5C3A] py-24 text-white">
             <div class="mx-auto max-w-2xl px-6 text-center">
                 <p class="mb-3 text-xs tracking-[0.3em] uppercase text-[#D4B896]">Encomendas Especiais</p>
                 <h2 class="mb-6 font-['Cormorant_Garamond',serif] text-4xl font-light leading-tight">
@@ -320,7 +333,6 @@ const filteredProducts = computed(() => props.products);
                     Quer uma joia com as flores do seu buquê, uma lembrança de data especial ou uma peça de macramê personalizada? Entre em contato — vamos criar algo único para você.
                 </p>
                 <a
-                    id="contato"
                     href="https://wa.me/5500000000000"
                     target="_blank"
                     class="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-medium tracking-widest uppercase text-[#7C5C3A] transition-all hover:bg-[#F5EFE8] hover:shadow-xl"
@@ -333,6 +345,8 @@ const filteredProducts = computed(() => props.products);
                 </a>
             </div>
         </section>
+
+        <Toaster />
 
         <!-- FOOTER -->
         <footer class="bg-[#2C2416] py-12 text-[#A8896C]">

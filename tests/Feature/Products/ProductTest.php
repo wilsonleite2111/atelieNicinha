@@ -263,6 +263,37 @@ class ProductTest extends TestCase
             ->assertSessionHasErrors('images.0');
     }
 
+    public function test_image_upload_rejects_more_than_10_images(): void
+    {
+        [, $team, $admin] = $this->teamWithRoles();
+
+        $images = array_map(fn ($i) => UploadedFile::fake()->image("photo{$i}.jpg"), range(0, 10));
+
+        $this->actingAs($admin)
+            ->post(route('products.store', $team), [
+                'name' => 'Produto',
+                'price' => '9.99',
+                'images' => $images,
+            ])
+            ->assertSessionHasErrors('images');
+    }
+
+    public function test_image_upload_accepts_exactly_10_images(): void
+    {
+        Storage::fake('public');
+        [, $team, $admin] = $this->teamWithRoles();
+
+        $images = array_map(fn ($i) => UploadedFile::fake()->image("photo{$i}.jpg"), range(0, 9));
+
+        $this->actingAs($admin)
+            ->post(route('products.store', $team), [
+                'name' => 'Produto',
+                'price' => '9.99',
+                'images' => $images,
+            ])
+            ->assertRedirect(route('products.index', $team));
+    }
+
     // --- CROSS-TEAM ISOLATION ---
 
     public function test_admin_cannot_edit_another_teams_product(): void

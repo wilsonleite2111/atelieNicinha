@@ -170,8 +170,9 @@ watch(
                                     v-else
                                     class="relative z-10 overflow-hidden border p-5"
                                 >
-                                    <div
-                                        v-html="qrCodeSvg"
+                                    <img
+                                        :src="'data:image/svg+xml;base64,' + btoa(qrCodeSvg ?? '')"
+                                        alt="QR code para autenticação de dois fatores"
                                         class="flex aspect-square size-full items-center justify-center"
                                         :style="{
                                             filter:

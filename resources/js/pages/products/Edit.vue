@@ -2,9 +2,12 @@
 import { Form, Head, router, usePage } from '@inertiajs/vue3';
 import { ImagePlus, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
 import { destroy, edit, index, update } from '@/routes/products';
 import type { Product, ProductImage, Team } from '@/types';
+
+const MAX_IMAGE_MB = 5;
 
 type Props = {
     product: Product;
@@ -47,8 +50,18 @@ const unmarkDelete = (img: ProductImage) => {
 };
 
 const onFilesSelected = (e: Event) => {
-    const files = (e.target as HTMLInputElement).files;
+    const input = e.target as HTMLInputElement;
+    const files = input.files;
     if (!files) return;
+
+    const oversized = Array.from(files).filter((f) => f.size > MAX_IMAGE_MB * 1024 * 1024);
+    if (oversized.length > 0) {
+        toast.error(`${oversized.length === 1 ? 'Uma imagem excede' : `${oversized.length} imagens excedem`} o limite de ${MAX_IMAGE_MB} MB.`);
+        input.value = '';
+        newPreviews.value = [];
+        return;
+    }
+
     newPreviews.value = [];
     for (const file of files) {
         newPreviews.value.push(URL.createObjectURL(file));
@@ -86,11 +99,13 @@ const confirmDelete = () => {
         </div>
 
         <Form
-            v-bind="update.form([page.props.currentTeam!.slug, product.id])"
+            :action="update.url([page.props.currentTeam!.slug, product.id])"
+            method="post"
             :multipart="true"
             class="grid gap-8 lg:grid-cols-[1fr_360px]"
             v-slot="{ errors, processing }"
         >
+            <input type="hidden" name="_method" value="PATCH" />
             <!-- Hidden delete_images inputs -->
             <input
                 v-for="id in deletedImageIds"

@@ -2,9 +2,12 @@
 import { Form, Head, usePage } from '@inertiajs/vue3';
 import { ImagePlus, X } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
 import { create, index, store } from '@/routes/products';
 import type { Team } from '@/types';
+
+const MAX_IMAGE_MB = 5;
 
 const page = usePage();
 
@@ -27,8 +30,18 @@ const previews = ref<string[]>([]);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const onFilesSelected = (e: Event) => {
-    const files = (e.target as HTMLInputElement).files;
+    const input = e.target as HTMLInputElement;
+    const files = input.files;
     if (!files) return;
+
+    const oversized = Array.from(files).filter((f) => f.size > MAX_IMAGE_MB * 1024 * 1024);
+    if (oversized.length > 0) {
+        toast.error(`${oversized.length === 1 ? 'Uma imagem excede' : `${oversized.length} imagens excedem`} o limite de ${MAX_IMAGE_MB} MB.`);
+        input.value = '';
+        previews.value = [];
+        return;
+    }
+
     previews.value = [];
     for (const file of files) {
         previews.value.push(URL.createObjectURL(file));
