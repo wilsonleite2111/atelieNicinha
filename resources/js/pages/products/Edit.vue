@@ -115,7 +115,7 @@ const confirmDelete = () => {
                             <input
                                 id="name"
                                 name="name"
-                                :default-value="product.name"
+                                :value="product.name"
                                 required
                                 class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
                             />
@@ -123,15 +123,26 @@ const confirmDelete = () => {
                         </div>
 
                         <div class="flex flex-col gap-1.5">
-                            <label for="description" class="text-sm font-medium text-foreground">Descrição</label>
+                            <label for="description" class="text-sm font-medium text-foreground">Descrição / Detalhes</label>
                             <textarea
                                 id="description"
                                 name="description"
                                 rows="4"
-                                :default-value="product.description ?? ''"
                                 class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-                            />
+                            >{{ product.description ?? '' }}</textarea>
                             <InputError :message="errors.description" />
+                        </div>
+
+                        <div class="flex flex-col gap-1.5">
+                            <label for="size" class="text-sm font-medium text-foreground">Tamanho</label>
+                            <input
+                                id="size"
+                                name="size"
+                                :value="product.size ?? ''"
+                                class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                                placeholder="Ex.: P, M, G ou 40cm x 20cm"
+                            />
+                            <InputError :message="errors.size" />
                         </div>
 
                         <div class="grid gap-5 sm:grid-cols-2">
@@ -145,7 +156,7 @@ const confirmDelete = () => {
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    :default-value="product.price"
+                                    :value="product.price"
                                     required
                                     class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
                                 />
@@ -157,7 +168,7 @@ const confirmDelete = () => {
                                 <input
                                     id="sku"
                                     name="sku"
-                                    :default-value="product.sku ?? ''"
+                                    :value="product.sku ?? ''"
                                     class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
                                 />
                                 <InputError :message="errors.sku" />

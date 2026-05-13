@@ -5,6 +5,8 @@ namespace App\Actions\Fortify;
 use App\Actions\Teams\CreateTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Enums\TeamRole;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -39,6 +41,13 @@ class CreateNewUser implements CreatesNewUsers
             ]);
 
             $this->createTeam->handle($user, $user->name."'s Team", isPersonal: true);
+
+            $storeTeam = Team::where('is_store', true)->first();
+
+            if ($storeTeam && ! $user->belongsToTeam($storeTeam)) {
+                $storeTeam->members()->attach($user, ['role' => TeamRole::Member->value]);
+                $user->switchTeam($storeTeam);
+            }
 
             return $user;
         });

@@ -85,7 +85,7 @@ const removePreview = (index: number) => {
                         </div>
 
                         <div class="flex flex-col gap-1.5">
-                            <label for="description" class="text-sm font-medium text-foreground">Descrição</label>
+                            <label for="description" class="text-sm font-medium text-foreground">Descrição / Detalhes</label>
                             <textarea
                                 id="description"
                                 name="description"
@@ -94,6 +94,17 @@ const removePreview = (index: number) => {
                                 placeholder="Descreva o produto…"
                             />
                             <InputError :message="errors.description" />
+                        </div>
+
+                        <div class="flex flex-col gap-1.5">
+                            <label for="size" class="text-sm font-medium text-foreground">Tamanho</label>
+                            <input
+                                id="size"
+                                name="size"
+                                class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                                placeholder="Ex.: P, M, G ou 40cm x 20cm"
+                            />
+                            <InputError :message="errors.size" />
                         </div>
 
                         <div class="grid gap-5 sm:grid-cols-2">
@@ -109,7 +120,7 @@ const removePreview = (index: number) => {
                                     min="0"
                                     required
                                     class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-                                    placeholder="0,00"
+                                    placeholder="0.00"
                                 />
                                 <InputError :message="errors.price" />
                             </div>

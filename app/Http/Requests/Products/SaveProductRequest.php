@@ -12,6 +12,15 @@ class SaveProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('price')) {
+            $this->merge([
+                'price' => str_replace(',', '.', (string) $this->input('price')),
+            ]);
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -20,6 +29,7 @@ class SaveProductRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'size' => ['nullable', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
             'sku' => ['nullable', 'string', 'max:100'],
             'active' => ['boolean'],

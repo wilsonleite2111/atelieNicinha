@@ -21,6 +21,7 @@ class UserRolesSeeder extends Seeder
         ]);
 
         $mainTeam = $owner->currentTeam;
+        $mainTeam->update(['is_store' => true]);
 
         // Admin — perfil administrador (gerencia produtos e membros)
         $admin = User::factory()->create([
@@ -30,6 +31,7 @@ class UserRolesSeeder extends Seeder
         ]);
 
         $mainTeam->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+        $admin->switchTeam($mainTeam);
 
         // Membro — perfil usuário (somente visualização)
         $member = User::factory()->create([
@@ -39,6 +41,7 @@ class UserRolesSeeder extends Seeder
         ]);
 
         $mainTeam->members()->attach($member, ['role' => TeamRole::Member->value]);
+        $member->switchTeam($mainTeam);
 
         $this->command->info('Usuários de teste criados:');
         $this->command->table(

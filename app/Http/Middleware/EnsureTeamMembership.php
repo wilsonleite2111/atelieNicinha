@@ -22,7 +22,9 @@ class EnsureTeamMembership
 
         abort_if(! $user || ! $team || ! $user->belongsToTeam($team), 403);
 
-        $this->ensureTeamMemberHasRequiredRole($user, $team, $minimumRole);
+        if (! $this->userHasRequiredRole($user, $team, $minimumRole)) {
+            return redirect()->route('home');
+        }
 
         if ($request->route('current_team') && ! $user->isCurrentTeam($team)) {
             $user->switchTeam($team);
@@ -32,24 +34,18 @@ class EnsureTeamMembership
     }
 
     /**
-     * Ensure the given user has at least the given role, if applicable.
+     * Determine if the user has at least the required role on the team.
      */
-    protected function ensureTeamMemberHasRequiredRole(User $user, Team $team, ?string $minimumRole): void
+    protected function userHasRequiredRole(User $user, Team $team, ?string $minimumRole): bool
     {
         if ($minimumRole === null) {
-            return;
+            return true;
         }
 
         $role = $user->teamRole($team);
-
         $requiredRole = TeamRole::tryFrom($minimumRole);
 
-        abort_if(
-            $requiredRole === null ||
-            $role === null ||
-            ! $role->isAtLeast($requiredRole),
-            403,
-        );
+        return $requiredRole !== null && $role !== null && $role->isAtLeast($requiredRole);
     }
 
     /**

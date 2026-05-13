@@ -35,13 +35,13 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_member_can_view_products_index(): void
+    public function test_member_is_redirected_from_products_index(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
             ->get(route('products.index', $team))
-            ->assertOk();
+            ->assertRedirect(route('home'));
     }
 
     public function test_guest_is_redirected_from_products_index(): void
@@ -63,13 +63,13 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_member_cannot_access_create_page(): void
+    public function test_member_is_redirected_from_create_page(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
             ->get(route('products.create', $team))
-            ->assertForbidden();
+            ->assertRedirect(route('home'));
     }
 
     public function test_admin_can_create_a_product(): void
@@ -89,7 +89,7 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function test_member_cannot_create_a_product(): void
+    public function test_member_is_redirected_when_creating_product(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
 
@@ -98,7 +98,7 @@ class ProductTest extends TestCase
                 'name' => 'Produto Teste',
                 'price' => '9.99',
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('home'));
     }
 
     public function test_product_store_requires_name_and_price(): void
@@ -108,6 +108,23 @@ class ProductTest extends TestCase
         $this->actingAs($owner)
             ->post(route('products.store', $team), [])
             ->assertSessionHasErrors(['name', 'price']);
+    }
+
+    public function test_price_with_comma_is_accepted_and_normalized(): void
+    {
+        [$owner, $team] = $this->ownerWithTeam();
+
+        $this->actingAs($owner)
+            ->post(route('products.store', $team), [
+                'name' => 'Produto Vírgula',
+                'price' => '1,00',
+            ])
+            ->assertRedirect(route('products.index', $team));
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Produto Vírgula',
+            'price' => '1.00',
+        ]);
     }
 
     // --- EDIT / UPDATE ---
@@ -122,14 +139,14 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_member_cannot_access_edit_page(): void
+    public function test_member_is_redirected_from_edit_page(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($member)
             ->get(route('products.edit', [$team, $product]))
-            ->assertForbidden();
+            ->assertRedirect(route('home'));
     }
 
     public function test_admin_can_update_a_product(): void
@@ -147,7 +164,7 @@ class ProductTest extends TestCase
         $this->assertEquals('Nome Novo', $product->fresh()->name);
     }
 
-    public function test_member_cannot_update_a_product(): void
+    public function test_member_is_redirected_when_updating_product(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
         $product = Product::factory()->for($team)->create();
@@ -157,7 +174,7 @@ class ProductTest extends TestCase
                 'name' => 'Nome Hackeado',
                 'price' => '0.01',
             ])
-            ->assertForbidden();
+            ->assertRedirect(route('home'));
     }
 
     // --- DESTROY ---
@@ -186,14 +203,14 @@ class ProductTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 
-    public function test_member_cannot_delete_a_product(): void
+    public function test_member_is_redirected_when_deleting_product(): void
     {
         [, $team, , $member] = $this->teamWithRoles();
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($member)
             ->delete(route('products.destroy', [$team, $product]))
-            ->assertForbidden();
+            ->assertRedirect(route('home'));
     }
 
     // --- IMAGES ---

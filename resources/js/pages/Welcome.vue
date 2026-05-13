@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { login, logout, register } from '@/routes';
+import { show as productShow } from '@/routes/products/public';
 
-withDefaults(defineProps<{ canRegister: boolean }>(), { canRegister: true });
+type PublicProduct = {
+    id: number;
+    name: string;
+    description: string | null;
+    size: string | null;
+    price: string;
+    thumbnail: string;
+};
+
+const props = withDefaults(
+    defineProps<{
+        canRegister: boolean;
+        products: PublicProduct[];
+        storeTeamSlug: string | null;
+    }>(),
+    { canRegister: true, products: () => [], storeTeamSlug: null }
+);
 
 const isScrolled = ref(false);
 const activeCategory = ref('todos');
@@ -14,73 +31,10 @@ onMounted(() => {
     });
 });
 
-const categories = [
-    { id: 'todos', label: 'Todos' },
-    { id: 'resina', label: 'Resina' },
-    { id: 'macrame', label: 'Macramê' },
-];
+const formatPrice = (price: string) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(price));
 
-const products = [
-    {
-        id: 1,
-        name: 'Colar Pétalas Eternas',
-        category: 'resina',
-        price: 'R$ 89,90',
-        badge: 'Único',
-        image: '/images/products/necklace.png',
-        description: 'Pétalas preservadas em resina cristalina',
-    },
-    {
-        id: 2,
-        name: 'Brincos Jardim',
-        category: 'resina',
-        price: 'R$ 65,00',
-        badge: 'Novo',
-        image: '/images/products/earrings.png',
-        description: 'Flores secas em resina translúcida',
-    },
-    {
-        id: 3,
-        name: 'Chaveiro Arco-íris',
-        category: 'resina',
-        price: 'R$ 35,00',
-        badge: null,
-        image: '/images/products/keychain.png',
-        description: 'Resina holográfica com glitter dourado',
-    },
-    {
-        id: 4,
-        name: 'Pulseira Boho',
-        category: 'macrame',
-        price: 'R$ 45,00',
-        badge: 'Personalizável',
-        image: '/images/products/bracelet.png',
-        description: 'Algodão natural com conta cerâmica',
-    },
-    {
-        id: 5,
-        name: 'Painel Macramê',
-        category: 'macrame',
-        price: 'R$ 189,00',
-        badge: 'Artesanal',
-        image: '/images/products/macrame.png',
-        description: 'Tapeçaria em corda natural premium',
-    },
-    {
-        id: 6,
-        name: 'Conjunto Resina',
-        category: 'resina',
-        price: 'R$ 130,00',
-        badge: 'Exclusivo',
-        image: '/images/products/hero.png',
-        description: 'Colar + brincos combinando em resina',
-    },
-];
-
-const filteredProducts = () =>
-    activeCategory.value === 'todos'
-        ? products
-        : products.filter((p) => p.category === activeCategory.value);
+const filteredProducts = computed(() => props.products);
 </script>
 
 <template>
@@ -113,6 +67,13 @@ const filteredProducts = () =>
                     <a href="#sobre" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Sobre</a>
                     <a href="#contato" class="hidden transition-colors hover:text-[#7C5C3A] md:block">Contato</a>
                     <template v-if="$page.props.auth.user">
+                        <Link
+                            v-if="$page.props.currentTeam"
+                            :href="`/${$page.props.currentTeam.slug}/dashboard`"
+                            class="rounded-full bg-[#7C5C3A] px-5 py-2 text-xs text-white transition-all hover:bg-[#5C4028]"
+                        >
+                            Painel
+                        </Link>
                         <Form v-bind="logout.form()">
                             <button
                                 type="submit"
@@ -222,40 +183,33 @@ const filteredProducts = () =>
                     </h2>
                 </div>
 
-                <!-- Category Filter -->
-                <div class="mb-12 flex justify-center gap-2">
-                    <button
-                        v-for="cat in categories"
-                        :key="cat.id"
-                        @click="activeCategory = cat.id"
-                        :class="[
-                            'rounded-full px-6 py-2.5 text-sm tracking-wider transition-all duration-300',
-                            activeCategory === cat.id
-                                ? 'bg-[#7C5C3A] text-white shadow-md'
-                                : 'border border-[#D9CDBF] text-[#5C4A32] hover:border-[#7C5C3A]',
-                        ]"
-                    >
-                        {{ cat.label }}
-                    </button>
+                <!-- Empty state -->
+                <div v-if="filteredProducts.length === 0" class="py-16 text-center">
+                    <p class="font-['Cormorant_Garamond',serif] text-2xl font-light text-[#A8896C]">
+                        Em breve nossa coleção estará disponível aqui.
+                    </p>
                 </div>
 
                 <!-- Products Grid -->
-                <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    <article
-                        v-for="product in filteredProducts()"
+                <div v-else class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    <Link
+                        v-for="product in filteredProducts"
                         :key="product.id"
+                        :href="productShow(product.id).url"
                         class="group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
                     >
                         <div class="relative overflow-hidden bg-[#F5EFE8]" style="aspect-ratio: 4/3;">
                             <img
-                                :src="product.image"
+                                v-if="product.thumbnail"
+                                :src="product.thumbnail"
                                 :alt="product.name"
                                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
-                            <div v-if="product.badge" class="absolute top-4 left-4">
-                                <span class="rounded-full bg-[#7C5C3A] px-3 py-1 text-[10px] tracking-widest uppercase text-white">
-                                    {{ product.badge }}
-                                </span>
+                            <div
+                                v-else
+                                class="flex h-full w-full items-center justify-center text-5xl text-[#D9CDBF]"
+                            >
+                                ✦
                             </div>
                             <div class="absolute inset-0 flex items-center justify-center bg-[#2C2416]/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                 <span class="rounded-full bg-white px-6 py-3 text-sm font-medium text-[#2C2416] shadow-lg">
@@ -264,21 +218,21 @@ const filteredProducts = () =>
                             </div>
                         </div>
                         <div class="p-6">
-                            <p class="mb-1 text-xs tracking-widest uppercase text-[#A8896C]">{{ product.category }}</p>
                             <h3 class="mb-2 font-['Cormorant_Garamond',serif] text-xl font-semibold text-[#2C2416]">
                                 {{ product.name }}
                             </h3>
-                            <p class="mb-4 text-sm text-[#7C6A56]">{{ product.description }}</p>
+                            <p v-if="product.size" class="mb-1 text-xs text-[#A8896C]">{{ product.size }}</p>
+                            <p v-if="product.description" class="mb-4 line-clamp-2 text-sm text-[#7C6A56]">{{ product.description }}</p>
                             <div class="flex items-center justify-between">
                                 <span class="font-['Cormorant_Garamond',serif] text-2xl font-semibold text-[#7C5C3A]">
-                                    {{ product.price }}
+                                    {{ formatPrice(product.price) }}
                                 </span>
-                                <button class="rounded-full border border-[#7C5C3A] px-4 py-2 text-xs text-[#7C5C3A] transition-all hover:bg-[#7C5C3A] hover:text-white">
-                                    Comprar
-                                </button>
+                                <span class="rounded-full border border-[#7C5C3A] px-4 py-2 text-xs text-[#7C5C3A] transition-all group-hover:bg-[#7C5C3A] group-hover:text-white">
+                                    Ver mais
+                                </span>
                             </div>
                         </div>
-                    </article>
+                    </Link>
                 </div>
             </div>
         </section>
