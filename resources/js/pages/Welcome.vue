@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
+import { ShoppingBag } from 'lucide-vue-next';
 import { Toaster } from '@/components/ui/sonner';
+import { Dialog } from '@/components/ui/dialog';
+import DialogScrollContent from '@/components/ui/dialog/DialogScrollContent.vue';
 import { login, logout, register } from '@/routes';
-import { show as productShow } from '@/routes/products/public';
+import type { ProductImage } from '@/types';
 
 type PublicProduct = {
     id: number;
@@ -12,6 +15,7 @@ type PublicProduct = {
     size: string | null;
     price: string;
     thumbnail: string;
+    images: ProductImage[];
 };
 
 const props = withDefaults(
@@ -26,6 +30,23 @@ const props = withDefaults(
 const isScrolled = ref(false);
 const activeCategory = ref('todos');
 const navRef = ref<HTMLElement | null>(null);
+const selectedProduct = ref<PublicProduct | null>(null);
+const activeModalImage = ref<string | null>(null);
+const zoomedImage = ref<string | null>(null);
+const isClosingLightbox = ref(false);
+
+function openProductModal(product: PublicProduct) {
+    selectedProduct.value = product;
+    activeModalImage.value = product.images[0]?.url ?? product.thumbnail ?? null;
+}
+
+async function closeLightbox() {
+    if (isClosingLightbox.value) return;
+    isClosingLightbox.value = true;
+    await new Promise<void>(r => setTimeout(r, 1000));
+    zoomedImage.value = null;
+    isClosingLightbox.value = false;
+}
 
 onMounted(() => {
     window.addEventListener('scroll', () => {
@@ -33,10 +54,12 @@ onMounted(() => {
     });
 });
 
-const scrollToSection = (sectionId: string) => {
+const scrollToSection = async (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (!element) return;
-    const navHeight = navRef.value?.offsetHeight ?? 80;
+    isScrolled.value = true;
+    await nextTick();
+    const navHeight = navRef.value?.offsetHeight ?? 64;
     const top = element.getBoundingClientRect().top + window.scrollY - navHeight;
     window.scrollTo({ top, behavior: 'smooth' });
 };
@@ -205,11 +228,11 @@ const filteredProducts = computed(() => props.products);
 
                 <!-- Products Grid -->
                 <div v-else class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    <Link
+                    <div
                         v-for="product in filteredProducts"
                         :key="product.id"
-                        :href="productShow(product.id).url"
                         class="group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
+                        @click="openProductModal(product)"
                     >
                         <div class="relative overflow-hidden bg-[#F5EFE8]" style="aspect-ratio: 4/3;">
                             <img
@@ -245,7 +268,7 @@ const filteredProducts = computed(() => props.products);
                                 </span>
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 </div>
             </div>
         </section>
@@ -346,6 +369,146 @@ const filteredProducts = computed(() => props.products);
             </div>
         </section>
 
+        <!-- PRODUCT DETAIL MODAL -->
+        <Dialog :open="!!selectedProduct" @update:open="(v) => { if (!v && !zoomedImage) selectedProduct = null }">
+            <DialogScrollContent class="max-w-3xl overflow-hidden rounded-2xl p-0 font-['Jost',sans-serif]">
+                <template v-if="selectedProduct">
+                    <div class="flex">
+                        <!-- Left: Image -->
+                        <div class="flex w-2/5 flex-shrink-0 flex-col bg-[#F5EFE8]">
+                            <div
+                                class="group relative min-h-[280px] flex-1 cursor-zoom-in"
+                                @click="activeModalImage && (zoomedImage = activeModalImage)"
+                            >
+                                <img
+                                    v-if="activeModalImage"
+                                    :src="activeModalImage"
+                                    :alt="selectedProduct.name"
+                                    class="h-full w-full object-contain transition-opacity duration-200 group-hover:opacity-90"
+                                />
+                                <div v-else class="flex h-full w-full items-center justify-center text-6xl text-[#D9CDBF]">✦</div>
+                                <div class="absolute inset-0 flex items-end justify-end p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                                    <div class="rounded-full bg-white/85 p-1.5 shadow">
+                                        <svg class="h-4 w-4 text-[#7C5C3A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <circle cx="11" cy="11" r="7" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Thumbnails -->
+                            <div v-if="selectedProduct.images.length > 1" class="flex gap-2 overflow-x-auto p-3">
+                                <button
+                                    v-for="img in selectedProduct.images"
+                                    :key="img.id"
+                                    class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all"
+                                    :class="activeModalImage === img.url ? 'border-[#7C5C3A]' : 'border-transparent opacity-60 hover:opacity-100'"
+                                    @click="activeModalImage = img.url"
+                                >
+                                    <img :src="img.url" :alt="selectedProduct.name" class="h-full w-full object-cover" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Info -->
+                        <div class="flex flex-1 flex-col gap-5 overflow-y-auto p-6" style="max-height: 80vh;">
+                            <div>
+                                <p class="mb-1 text-xs tracking-[0.3em] uppercase text-[#A8896C]">Nice Rolim Ateliê</p>
+                                <h2 class="font-['Cormorant_Garamond',serif] text-3xl font-light leading-tight text-[#2C2416]">
+                                    {{ selectedProduct.name }}
+                                </h2>
+                            </div>
+
+                            <div class="font-['Cormorant_Garamond',serif] text-3xl font-semibold text-[#7C5C3A]">
+                                {{ formatPrice(selectedProduct.price) }}
+                            </div>
+
+                            <!-- Size + Description -->
+                            <div v-if="selectedProduct.size || selectedProduct.description" class="flex flex-col gap-3 rounded-xl bg-[#F2ECE4] p-4">
+                                <div v-if="selectedProduct.size" class="flex items-center justify-between border-b border-[#D9CDBF] pb-3">
+                                    <span class="text-sm tracking-wider text-[#7C6A56]">Tamanho</span>
+                                    <span class="font-medium text-[#2C2416]">{{ selectedProduct.size }}</span>
+                                </div>
+                                <div v-if="selectedProduct.description">
+                                    <p class="mb-1 text-xs tracking-widest uppercase text-[#A8896C]">Descrição</p>
+                                    <p class="leading-relaxed text-[#5C4A32]">{{ selectedProduct.description }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Buy / Login -->
+                            <div v-if="$page.props.auth?.user">
+                                <a
+                                    :href="`https://wa.me/5500000000000?text=Olá! Tenho interesse no produto: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`"
+                                    target="_blank"
+                                    class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#7C5C3A] px-6 py-3 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
+                                >
+                                    <ShoppingBag class="h-5 w-5" />
+                                    Comprar via WhatsApp
+                                </a>
+                                <p class="mt-2 text-center text-xs text-[#A8896C]">
+                                    Você será direcionado para o WhatsApp para finalizar seu pedido.
+                                </p>
+                            </div>
+                            <div v-else class="flex flex-col gap-3">
+                                <p class="text-center text-sm text-[#5C4A32]">Faça login para comprar este produto.</p>
+                                <Link
+                                    :href="login().url"
+                                    class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#7C5C3A] px-6 py-3 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
+                                >
+                                    Entrar para Comprar
+                                </Link>
+                            </div>
+
+                            <!-- Trust badges -->
+                            <div class="grid grid-cols-3 gap-3 border-t border-[#D9CDBF] pt-4">
+                                <div class="flex flex-col items-center gap-1 text-center">
+                                    <span class="text-xl">✦</span>
+                                    <span class="text-xs text-[#7C6A56]">Peça única</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1 text-center">
+                                    <span class="text-xl">🌿</span>
+                                    <span class="text-xs text-[#7C6A56]">Artesanal</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1 text-center">
+                                    <span class="text-xl">💛</span>
+                                    <span class="text-xs text-[#7C6A56]">Feito com amor</span>
+                                </div>
+                            </div>
+
+                            <!-- Close button -->
+                            <button
+                                class="mt-auto w-full rounded-full border border-[#7C5C3A] px-8 py-3 text-sm tracking-widest uppercase text-[#7C5C3A] transition-all hover:bg-[#7C5C3A]/10"
+                                @click="selectedProduct = null"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LIGHTBOX — dentro do Dialog para evitar conflito com focus trap do reka-ui -->
+                    <div
+                        v-if="zoomedImage"
+                        class="lightbox-overlay fixed inset-0 z-[999] flex cursor-zoom-out items-center justify-center p-6"
+                        :class="{ 'lightbox-closing': isClosingLightbox }"
+                        @click="closeLightbox"
+                    >
+                        <img
+                            :src="zoomedImage"
+                            class="lightbox-image max-h-full max-w-full object-contain"
+                            @click.stop
+                        />
+                        <button
+                            class="absolute right-5 top-5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30"
+                            @click.stop="closeLightbox"
+                        >
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </DialogScrollContent>
+        </Dialog>
+
         <Toaster />
 
         <!-- FOOTER -->
@@ -371,3 +534,40 @@ const filteredProducts = computed(() => props.products);
         </footer>
     </div>
 </template>
+
+<style scoped>
+/* --- Keyframes --- */
+@keyframes lb-bg-in {
+    from { background-color: transparent; }
+    to   { background-color: rgba(0, 0, 0, 0.92); }
+}
+@keyframes lb-bg-out {
+    from { background-color: rgba(0, 0, 0, 0.92); }
+    to   { background-color: transparent; }
+}
+@keyframes lb-img-in {
+    from { transform: scale(0.08); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+@keyframes lb-img-out {
+    from { transform: scale(1);    opacity: 1; }
+    to   { transform: scale(0.08); opacity: 0; }
+}
+
+/* --- Estado aberto --- */
+.lightbox-overlay {
+    background-color: rgba(0, 0, 0, 0.92);
+    animation: lb-bg-in 0.6s ease forwards;
+}
+.lightbox-overlay .lightbox-image {
+    animation: lb-img-in 1s cubic-bezier(0.34, 1.15, 0.64, 1) forwards;
+}
+
+/* --- Estado fechando --- */
+.lightbox-overlay.lightbox-closing {
+    animation: lb-bg-out 1s ease forwards;
+}
+.lightbox-overlay.lightbox-closing .lightbox-image {
+    animation: lb-img-out 1s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+</style>

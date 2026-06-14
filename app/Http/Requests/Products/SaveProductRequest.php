@@ -39,7 +39,7 @@ class SaveProductRequest extends FormRequest
             'sku' => ['nullable', 'string', 'max:100'],
             'active' => ['boolean'],
             'images' => ['nullable', 'array', 'max:10'],
-            'images.*' => ['image', 'mimes:jpeg,png,webp', 'max:5120'],
+            'images.*' => ['image', 'mimes:jpeg,png,webp', 'max:20480'],
             'delete_images' => ['nullable', 'array'],
             'delete_images.*' => ['integer'],
         ];
@@ -53,7 +53,7 @@ class SaveProductRequest extends FormRequest
         return [
             'images.*.image' => 'O arquivo enviado não é uma imagem válida.',
             'images.*.mimes' => 'Use apenas imagens JPEG, PNG ou WebP.',
-            'images.*.max' => 'Cada imagem deve ter no máximo 5 MB.',
+            'images.*.max' => 'Cada imagem deve ter no máximo 20 MB.',
             'images.*.uploaded' => 'Falha ao enviar a imagem. O arquivo pode ser muito grande ou estar corrompido.',
         ];
     }

@@ -27,6 +27,10 @@ class WelcomeController extends Controller
                     'size' => $product->size,
                     'price' => $product->price,
                     'thumbnail' => $product->getFirstMediaUrl('images'),
+                    'images' => $product->getMedia('images')
+                        ->map(fn ($m) => ['id' => $m->id, 'url' => $m->getUrl()])
+                        ->values()
+                        ->all(),
                 ])
             : collect();
 
