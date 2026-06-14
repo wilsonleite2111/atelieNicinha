@@ -494,7 +494,7 @@ const filteredProducts = computed(() => props.products);
                         <img
                             :src="zoomedImage"
                             class="lightbox-image max-h-full max-w-full object-contain"
-                            @click.stop
+                            @click.stop="closeLightbox"
                         />
                         <button
                             class="absolute right-5 top-5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/30"
