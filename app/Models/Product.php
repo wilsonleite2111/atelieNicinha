@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable(['team_id', 'category_id', 'name', 'description', 'size', 'price', 'active'])]
+#[Fillable(['category_id', 'name', 'description', 'size', 'price', 'active'])]
 class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */

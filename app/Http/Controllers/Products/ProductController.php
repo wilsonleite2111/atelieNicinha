@@ -71,7 +71,11 @@ class ProductController extends Controller
                 $product->addMedia($file)->toMediaCollection('images');
             }
         } catch (\Throwable $e) {
-            Log::error('Product store failed', ['exception' => $e]);
+            Log::error('Product store failed', [
+                'message' => $e->getMessage(),
+                'team_id' => $current_team->id,
+                'user_id' => $request->user()->id,
+            ]);
             Inertia::flash('toast', ['type' => 'error', 'message' => 'Erro ao salvar o produto. Tente novamente.']);
 
             return back();
@@ -129,7 +133,12 @@ class ProductController extends Controller
                 $product->addMedia($file)->toMediaCollection('images');
             }
         } catch (\Throwable $e) {
-            Log::error('Product update failed', ['exception' => $e]);
+            Log::error('Product update failed', [
+                'message' => $e->getMessage(),
+                'team_id' => $current_team->id,
+                'product_id' => $product->id,
+                'user_id' => $request->user()->id,
+            ]);
             Inertia::flash('toast', ['type' => 'error', 'message' => 'Erro ao atualizar o produto. Tente novamente.']);
 
             return back();
