@@ -14,7 +14,6 @@ class ProductFactory extends Factory
             'name' => fake()->words(3, true),
             'description' => fake()->optional()->sentence(),
             'price' => fake()->randomFloat(2, 1, 999),
-            'sku' => fake()->optional()->bothify('SKU-####'),
             'active' => true,
         ];
     }

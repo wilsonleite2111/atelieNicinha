@@ -32,11 +32,11 @@ class SaveProductRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'size' => ['nullable', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
-            'sku' => ['nullable', 'string', 'max:100'],
             'active' => ['boolean'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpeg,png,webp', 'max:20480'],

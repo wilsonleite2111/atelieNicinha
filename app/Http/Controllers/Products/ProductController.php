@@ -25,10 +25,7 @@ class ProductController extends Controller
         $query = $current_team->products()->orderBy('name');
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
-            });
+            $query->where('name', 'ilike', "%{$search}%");
         }
 
         $products = $query->get()->map(fn (Product $product) => [
@@ -36,7 +33,6 @@ class ProductController extends Controller
             'name' => $product->name,
             'description' => $product->description,
             'price' => $product->price,
-            'sku' => $product->sku,
             'active' => $product->active,
             'thumbnail' => $product->getFirstMediaUrl('images'),
         ]);
@@ -52,7 +48,14 @@ class ProductController extends Controller
     {
         Gate::authorize('create', [Product::class, $current_team]);
 
-        return Inertia::render('products/Create');
+        return Inertia::render('products/Create', [
+            'categories' => $current_team->categories()
+                ->where('active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])
+                ->values(),
+        ]);
     }
 
     public function store(SaveProductRequest $request, Team $current_team): RedirectResponse
@@ -90,14 +93,21 @@ class ProductController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'description' => $product->description,
+                'size' => $product->size,
                 'price' => $product->price,
-                'sku' => $product->sku,
                 'active' => $product->active,
+                'category_id' => $product->category_id,
                 'images' => $product->getMedia('images')->map(fn ($m) => [
                     'id' => $m->id,
                     'url' => $m->getUrl(),
                 ]),
             ],
+            'categories' => $current_team->categories()
+                ->where('active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])
+                ->values(),
         ]);
     }
 

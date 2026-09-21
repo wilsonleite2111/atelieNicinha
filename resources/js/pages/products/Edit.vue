@@ -9,8 +9,11 @@ import type { Product, ProductImage, Team } from '@/types';
 
 const MAX_IMAGE_MB = 5;
 
+type CategoryOption = { id: number; name: string };
+
 type Props = {
     product: Product;
+    categories: CategoryOption[];
 };
 
 const props = defineProps<Props>();
@@ -160,34 +163,41 @@ const confirmDelete = () => {
                             <InputError :message="errors.size" />
                         </div>
 
-                        <div class="grid gap-5 sm:grid-cols-2">
-                            <div class="flex flex-col gap-1.5">
-                                <label for="price" class="text-sm font-medium text-foreground">
-                                    Preço <span class="text-destructive">*</span>
-                                </label>
-                                <input
-                                    id="price"
-                                    name="price"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    :value="product.price"
-                                    required
-                                    class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-                                />
-                                <InputError :message="errors.price" />
-                            </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="category_id" class="text-sm font-medium text-foreground">Categoria</label>
+                            <select
+                                id="category_id"
+                                name="category_id"
+                                class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                            >
+                                <option value="">Sem categoria</option>
+                                <option
+                                    v-for="cat in categories"
+                                    :key="cat.id"
+                                    :value="cat.id"
+                                    :selected="product.category_id === cat.id"
+                                >
+                                    {{ cat.name }}
+                                </option>
+                            </select>
+                            <InputError :message="errors.category_id" />
+                        </div>
 
-                            <div class="flex flex-col gap-1.5">
-                                <label for="sku" class="text-sm font-medium text-foreground">SKU</label>
-                                <input
-                                    id="sku"
-                                    name="sku"
-                                    :value="product.sku ?? ''"
-                                    class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-                                />
-                                <InputError :message="errors.sku" />
-                            </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="price" class="text-sm font-medium text-foreground">
+                                Preço <span class="text-destructive">*</span>
+                            </label>
+                            <input
+                                id="price"
+                                name="price"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                :value="product.price"
+                                required
+                                class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                            />
+                            <InputError :message="errors.price" />
                         </div>
 
                         <div class="flex items-center gap-3">

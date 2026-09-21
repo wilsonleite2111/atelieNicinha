@@ -102,7 +102,7 @@ const filteredProducts = computed(() => props.products);
                     <a href="#contato" class="hidden transition-colors hover:text-[#7C5C3A] md:block" @click.prevent="scrollToSection('contato')">Contato</a>
                     <template v-if="$page.props.auth.user">
                         <Link
-                            v-if="$page.props.currentTeam"
+                            v-if="$page.props.currentTeam && $page.props.currentTeam.role !== 'member'"
                             :href="`/${$page.props.currentTeam.slug}/dashboard`"
                             class="rounded-full bg-[#7C5C3A] px-5 py-2 text-xs text-white transition-all hover:bg-[#5C4028]"
                         >
@@ -356,7 +356,7 @@ const filteredProducts = computed(() => props.products);
                     Quer uma joia com as flores do seu buquê, uma lembrança de data especial ou uma peça de macramê personalizada? Entre em contato — vamos criar algo único para você.
                 </p>
                 <a
-                    href="https://wa.me/5500000000000"
+                    href="https://wa.me/5541995291049"
                     target="_blank"
                     class="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-medium tracking-widest uppercase text-[#7C5C3A] transition-all hover:bg-[#F5EFE8] hover:shadow-xl"
                 >
@@ -437,7 +437,7 @@ const filteredProducts = computed(() => props.products);
                             <!-- Buy / Login -->
                             <div v-if="$page.props.auth?.user">
                                 <a
-                                    :href="`https://wa.me/5500000000000?text=Olá! Tenho interesse no produto: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`"
+                                    :href="`https://wa.me/5541995291049?text=Olá! Tenho interesse no produto: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`"
                                     target="_blank"
                                     class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#7C5C3A] px-6 py-3 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
                                 >

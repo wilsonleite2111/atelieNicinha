@@ -2,6 +2,7 @@
 
 namespace App\Http\Responses;
 
+use App\Enums\TeamRole;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\URL;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
@@ -17,6 +18,10 @@ class RegisterResponse implements RegisterResponseContract
 
         if (! $team) {
             abort(403);
+        }
+
+        if ($user?->teamRole($team) === TeamRole::Member) {
+            return redirect()->route('home');
         }
 
         URL::defaults(['current_team' => $team->slug]);

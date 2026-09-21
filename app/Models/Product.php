@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable(['team_id', 'name', 'description', 'size', 'price', 'sku', 'active'])]
+#[Fillable(['team_id', 'category_id', 'name', 'description', 'size', 'price', 'active'])]
 class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
@@ -32,5 +32,10 @@ class Product extends Model implements HasMedia
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

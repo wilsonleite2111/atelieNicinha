@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Globe, LayoutGrid, LogOut, Package, Users } from 'lucide-vue-next';
+import { Globe, LayoutGrid, LogOut, Package, Tag, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -16,6 +16,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home, logout } from '@/routes';
+import { index as categoriesIndex } from '@/routes/categories';
 import { index as productsIndex } from '@/routes/products';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { NavItem } from '@/types';
@@ -36,6 +37,10 @@ const productsUrl = computed(() =>
     page.props.currentTeam ? productsIndex(page.props.currentTeam.slug).url : '/',
 );
 
+const categoriesUrl = computed(() =>
+    page.props.currentTeam ? categoriesIndex(page.props.currentTeam.slug).url : '/',
+);
+
 const usersUrl = computed(() =>
     page.props.currentTeam ? usersIndex(page.props.currentTeam.slug).url : '/',
 );
@@ -51,6 +56,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Produtos',
             href: productsUrl.value,
             icon: Package,
+        },
+        {
+            title: 'Categorias',
+            href: categoriesUrl.value,
+            icon: Tag,
         },
     ];
 

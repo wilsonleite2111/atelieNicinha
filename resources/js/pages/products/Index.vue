@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { create, destroy, edit, index } from '@/routes/products';
 import type { Product, Team } from '@/types';
 
@@ -36,6 +36,8 @@ const doSearch = () => {
         { replace: true, preserveState: true },
     );
 };
+
+watch(searchQuery, doSearch);
 
 const confirmDelete = (product: Product) => {
     if (!confirm(`Tem certeza que deseja excluir "${product.name}"? Esta ação não pode ser desfeita.`)) {
@@ -77,12 +79,12 @@ const formatPrice = (price: string) =>
         </div>
 
         <!-- Search -->
-        <form @submit.prevent="doSearch" class="relative">
+        <form @submit.prevent class="relative">
             <Search class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
                 v-model="searchQuery"
                 type="search"
-                placeholder="Buscar por nome ou SKU…"
+                placeholder="Buscar por nome…"
                 class="w-full rounded-full border border-border bg-card py-3 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 sm:max-w-sm"
             />
         </form>
@@ -133,7 +135,6 @@ const formatPrice = (price: string) =>
                         {{ product.name }}
                     </p>
                     <p class="text-sm font-medium text-primary">{{ formatPrice(product.price) }}</p>
-                    <p v-if="product.sku" class="text-xs text-muted-foreground">SKU: {{ product.sku }}</p>
                     <p
                         v-if="product.description"
                         class="mt-1 line-clamp-2 text-xs text-muted-foreground"

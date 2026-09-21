@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Categories\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\Products\PublicProductController;
@@ -20,6 +21,7 @@ Route::prefix('{current_team}')
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::resource('products', ProductController::class)->except(['show']);
+        Route::resource('categories', CategoryController::class)->except(['show']);
 
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('users', [UserController::class, 'index'])->name('users.index');

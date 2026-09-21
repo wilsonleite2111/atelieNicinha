@@ -9,8 +9,8 @@ export type Product = {
     description: string | null;
     size: string | null;
     price: string;
-    sku: string | null;
     active: boolean;
+    category_id: number | null;
     thumbnail?: string;
     images?: ProductImage[];
 };
