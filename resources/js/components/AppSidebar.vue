@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { Globe, LayoutGrid, LogOut, Package, Tag, Users } from 'lucide-vue-next';
+import {
+    Globe,
+    LayoutGrid,
+    LogOut,
+    Package,
+    Tag,
+    Users,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import TeamSwitcher from '@/components/TeamSwitcher.vue';
 import {
     Sidebar,
     SidebarContent,
@@ -23,32 +29,28 @@ import type { NavItem } from '@/types';
 
 const page = usePage();
 
-const handleLogout = () => { router.flushAll(); };
+const handleLogout = () => {
+    router.flushAll();
+};
 
 const canManageUsers = computed(
-    () => page.props.currentTeam?.role === 'owner' || page.props.currentTeam?.role === 'admin'
+    () =>
+        page.props.currentTeam?.role === 'owner' ||
+        page.props.currentTeam?.role === 'admin',
 );
 
-const dashboardUrl = computed(() =>
-    page.props.currentTeam ? dashboard(page.props.currentTeam.slug).url : '/',
-);
+const dashboardUrl = computed(() => dashboard().url);
 
-const productsUrl = computed(() =>
-    page.props.currentTeam ? productsIndex(page.props.currentTeam.slug).url : '/',
-);
+const productsUrl = computed(() => productsIndex().url);
 
-const categoriesUrl = computed(() =>
-    page.props.currentTeam ? categoriesIndex(page.props.currentTeam.slug).url : '/',
-);
+const categoriesUrl = computed(() => categoriesIndex().url);
 
-const usersUrl = computed(() =>
-    page.props.currentTeam ? usersIndex(page.props.currentTeam.slug).url : '/',
-);
+const usersUrl = computed(() => usersIndex().url);
 
 const mainNavItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: 'Painel',
             href: dashboardUrl.value,
             icon: LayoutGrid,
         },
@@ -88,11 +90,6 @@ const mainNavItems = computed<NavItem[]>(() => {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <TeamSwitcher />
-                </SidebarMenuItem>
-            </SidebarMenu>
         </SidebarHeader>
 
         <SidebarContent>
@@ -111,14 +108,18 @@ const mainNavItems = computed<NavItem[]>(() => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton as-child>
-                        <Link :href="logout()" as="button" @click="handleLogout">
+                        <Link
+                            :href="logout()"
+                            as="button"
+                            @click="handleLogout"
+                        >
                             <LogOut class="size-4" />
                             <span>Sair</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
-            <div class="border-t border-sidebar-border my-1" />
+            <div class="my-1 border-t border-sidebar-border" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

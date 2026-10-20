@@ -5,7 +5,6 @@ import { dashboard } from '@/routes';
 import { create, index as productsIndex } from '@/routes/products';
 import { index as usersIndex } from '@/routes/admin/users';
 import { show as productShow } from '@/routes/products/public';
-import type { Team } from '@/types';
 
 type PublicProduct = {
     id: number;
@@ -22,11 +21,11 @@ defineProps<{
 }>();
 
 defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
+    layout: () => ({
         breadcrumbs: [
             {
-                title: 'Dashboard',
-                href: props.currentTeam ? dashboard(props.currentTeam.slug) : '/',
+                title: 'Painel',
+                href: dashboard(),
             },
         ],
     }),
@@ -42,7 +41,7 @@ const formatPrice = (price: string) =>
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Painel" />
 
     <div class="flex flex-col gap-8 p-2">
         <!-- Welcome -->
@@ -59,8 +58,7 @@ const formatPrice = (price: string) =>
         <!-- Quick actions -->
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Link
-                v-if="page.props.currentTeam"
-                :href="productsIndex(page.props.currentTeam.slug).url"
+                :href="productsIndex().url"
                 class="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
             >
                 <div class="rounded-full bg-primary/10 p-2.5">
@@ -73,8 +71,8 @@ const formatPrice = (price: string) =>
             </Link>
 
             <Link
-                v-if="canManageProducts && page.props.currentTeam"
-                :href="create(page.props.currentTeam.slug).url"
+                v-if="canManageProducts"
+                :href="create().url"
                 class="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
             >
                 <div class="rounded-full bg-primary/10 p-2.5">
@@ -87,8 +85,8 @@ const formatPrice = (price: string) =>
             </Link>
 
             <Link
-                v-if="canManageUsers && page.props.currentTeam"
-                :href="usersIndex(page.props.currentTeam.slug).url"
+                v-if="canManageUsers"
+                :href="usersIndex().url"
                 class="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-shadow hover:shadow-md"
             >
                 <div class="rounded-full bg-primary/10 p-2.5">
@@ -109,8 +107,7 @@ const formatPrice = (price: string) =>
                     <h2 class="font-['Cormorant_Garamond',serif] text-2xl font-light text-foreground">Produtos Ativos</h2>
                 </div>
                 <Link
-                    v-if="page.props.currentTeam"
-                    :href="productsIndex(page.props.currentTeam.slug).url"
+                    :href="productsIndex().url"
                     class="text-xs tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground"
                 >
                     Ver todos
@@ -124,8 +121,8 @@ const formatPrice = (price: string) =>
                     Nenhum produto ativo no momento.
                 </p>
                 <Link
-                    v-if="canManageProducts && page.props.currentTeam"
-                    :href="create(page.props.currentTeam.slug).url"
+                    v-if="canManageProducts"
+                    :href="create().url"
                     class="mt-2 rounded-full bg-primary px-6 py-2.5 text-xs tracking-widest uppercase text-primary-foreground transition-colors hover:opacity-90"
                 >
                     Cadastrar primeiro produto

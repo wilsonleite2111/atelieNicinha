@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\TeamPermission;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,14 +13,16 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
-    public function index(Request $request, Team $current_team): Response
+    public function index(Request $request): Response
     {
+        $team = $request->user()->currentTeam;
+
         abort_unless(
-            $request->user()->hasTeamPermission($current_team, TeamPermission::UpdateMember),
+            $request->user()->hasTeamPermission($team, TeamPermission::UpdateMember),
             403
         );
 
-        $users = $current_team->members()
+        $users = $team->members()
             ->orderBy('name')
             ->get()
             ->map(function (User $user) {
@@ -45,10 +46,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function toggle(Request $request, Team $current_team, User $user): RedirectResponse
+    public function toggle(Request $request, User $user): RedirectResponse
     {
+        $team = $request->user()->currentTeam;
+
         abort_unless(
-            $request->user()->hasTeamPermission($current_team, TeamPermission::UpdateMember),
+            $request->user()->hasTeamPermission($team, TeamPermission::UpdateMember),
             403
         );
 
@@ -63,6 +66,6 @@ class UserController extends Controller
                 : __('Usuário desativado com sucesso.'),
         ]);
 
-        return to_route('admin.users.index', $current_team);
+        return to_route('admin.users.index');
     }
 }

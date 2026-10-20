@@ -25,6 +25,7 @@ class PublicProductController extends Controller
                     'url' => $m->getUrl(),
                 ]),
             ],
+            'whatsapp' => $product->team->whatsapp,
         ]);
     }
 }

@@ -5,6 +5,7 @@ export type Team = {
     name: string;
     slug: string;
     isPersonal: boolean;
+    whatsapp?: string | null;
     role?: TeamRole;
     roleLabel?: string;
     isCurrent?: boolean;

@@ -4,9 +4,7 @@ namespace App\Http\Responses;
 
 use App\Enums\TeamRole;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\URL;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
-use Laravel\Fortify\Fortify;
 use Symfony\Component\HttpFoundation\Response;
 
 class RegisterResponse implements RegisterResponseContract
@@ -24,10 +22,8 @@ class RegisterResponse implements RegisterResponseContract
             return redirect()->route('home');
         }
 
-        URL::defaults(['current_team' => $team->slug]);
-
         return $request->wantsJson()
             ? new JsonResponse(['two_factor' => false], 201)
-            : redirect()->intended("/{$team->slug}".Fortify::redirects('register'));
+            : redirect()->intended(route('dashboard'));
     }
 }

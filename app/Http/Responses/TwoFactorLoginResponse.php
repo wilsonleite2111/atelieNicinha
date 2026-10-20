@@ -4,9 +4,7 @@ namespace App\Http\Responses;
 
 use App\Enums\TeamRole;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\URL;
 use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
-use Laravel\Fortify\Fortify;
 use Symfony\Component\HttpFoundation\Response;
 
 class TwoFactorLoginResponse implements TwoFactorLoginResponseContract
@@ -24,10 +22,8 @@ class TwoFactorLoginResponse implements TwoFactorLoginResponseContract
             return redirect()->route('home');
         }
 
-        URL::defaults(['current_team' => $team->slug]);
-
         return $request->wantsJson()
             ? new JsonResponse(['two_factor' => false], 200)
-            : redirect()->to("/{$team->slug}".Fortify::redirects('login'));
+            : redirect()->route('dashboard');
     }
 }

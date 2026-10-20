@@ -26,10 +26,6 @@ class EnsureTeamMembership
             return redirect()->route('home');
         }
 
-        if ($request->route('current_team') && ! $user->isCurrentTeam($team)) {
-            $user->switchTeam($team);
-        }
-
         return $next($request);
     }
 
@@ -53,12 +49,6 @@ class EnsureTeamMembership
      */
     protected function team(Request $request): ?Team
     {
-        $team = $request->route('current_team') ?? $request->route('team');
-
-        if (is_string($team)) {
-            $team = Team::where('slug', $team)->first();
-        }
-
-        return $team;
+        return $request->user()?->currentTeam;
     }
 }

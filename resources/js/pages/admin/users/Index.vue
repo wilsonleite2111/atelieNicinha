@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import { CheckCircle, XCircle } from 'lucide-vue-next';
 import { index, toggle } from '@/routes/admin/users';
-import type { Team } from '@/types';
 
 type ManagedUser = {
     id: number;
@@ -17,14 +16,12 @@ type ManagedUser = {
 
 defineProps<{ users: ManagedUser[] }>();
 
-const page = usePage();
-
 defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
+    layout: () => ({
         breadcrumbs: [
             {
                 title: 'Usuários',
-                href: props.currentTeam ? index(props.currentTeam.slug) : '/',
+                href: index(),
             },
         ],
     }),
@@ -134,7 +131,7 @@ const formatDate = (iso: string) =>
                         <td class="px-6 py-4 text-right">
                             <Form
                                 v-if="user.id !== $page.props.auth.user?.id"
-                                v-bind="toggle.form([page.props.currentTeam!.slug, user.id])"
+                                v-bind="toggle.form(user.id)"
                                 class="inline"
                             >
                                 <button

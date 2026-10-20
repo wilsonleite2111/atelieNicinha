@@ -19,7 +19,7 @@ class UserManagementTest extends TestCase
         [$owner, $team] = $this->ownerWithTeam();
 
         $this->actingAs($owner)
-            ->get(route('admin.users.index', $team))
+            ->get(route('admin.users.index'))
             ->assertOk();
     }
 
@@ -28,7 +28,7 @@ class UserManagementTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->get(route('admin.users.index', $team))
+            ->get(route('admin.users.index'))
             ->assertOk();
     }
 
@@ -37,7 +37,7 @@ class UserManagementTest extends TestCase
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
-            ->get(route('admin.users.index', $team))
+            ->get(route('admin.users.index'))
             ->assertRedirect(route('home'));
     }
 
@@ -45,7 +45,7 @@ class UserManagementTest extends TestCase
     {
         $team = Team::factory()->create();
 
-        $this->get(route('admin.users.index', $team))
+        $this->get(route('admin.users.index'))
             ->assertRedirect(route('login'));
     }
 
@@ -58,8 +58,8 @@ class UserManagementTest extends TestCase
         $this->assertTrue($member->active);
 
         $this->actingAs($owner)
-            ->patch(route('admin.users.toggle', [$team, $member]))
-            ->assertRedirect(route('admin.users.index', $team));
+            ->patch(route('admin.users.toggle', $member))
+            ->assertRedirect(route('admin.users.index'));
 
         $this->assertFalse($member->fresh()->active);
     }
@@ -70,8 +70,8 @@ class UserManagementTest extends TestCase
         $member->update(['active' => false]);
 
         $this->actingAs($owner)
-            ->patch(route('admin.users.toggle', [$team, $member]))
-            ->assertRedirect(route('admin.users.index', $team));
+            ->patch(route('admin.users.toggle', $member))
+            ->assertRedirect(route('admin.users.index'));
 
         $this->assertTrue($member->fresh()->active);
     }
@@ -81,9 +81,10 @@ class UserManagementTest extends TestCase
         [, $team, , $member] = $this->teamWithRoles();
         $otherUser = User::factory()->create();
         $team->members()->attach($otherUser, ['role' => TeamRole::Member->value]);
+        $otherUser->switchTeam($team);
 
         $this->actingAs($member)
-            ->patch(route('admin.users.toggle', [$team, $otherUser]))
+            ->patch(route('admin.users.toggle', $otherUser))
             ->assertRedirect(route('home'));
     }
 
@@ -92,7 +93,7 @@ class UserManagementTest extends TestCase
         [$owner, $team] = $this->ownerWithTeam();
 
         $this->actingAs($owner)
-            ->patch(route('admin.users.toggle', [$team, $owner]))
+            ->patch(route('admin.users.toggle', $owner))
             ->assertForbidden();
     }
 
@@ -104,7 +105,7 @@ class UserManagementTest extends TestCase
         $owner->update(['active' => false]);
 
         $this->actingAs($owner)
-            ->get(route('admin.users.index', $team))
+            ->get(route('admin.users.index'))
             ->assertRedirect(route('login'));
     }
 
@@ -116,6 +117,7 @@ class UserManagementTest extends TestCase
         $owner = User::factory()->create();
         $team = Team::factory()->create();
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
         $owner->update(['current_team_id' => $team->id]);
 
         return [$owner, $team];
@@ -128,9 +130,11 @@ class UserManagementTest extends TestCase
 
         $admin = User::factory()->create();
         $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+        $admin->switchTeam($team);
 
         $member = User::factory()->create();
         $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+        $member->switchTeam($team);
 
         return [$owner, $team, $admin, $member];
     }

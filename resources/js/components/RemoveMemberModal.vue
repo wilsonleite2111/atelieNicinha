@@ -12,10 +12,9 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { destroy as destroyMember } from '@/routes/teams/members';
-import type { Team, TeamMember } from '@/types';
+import type { TeamMember } from '@/types';
 
 type Props = {
-    team: Team;
     member: TeamMember | null;
     open: boolean;
 };
@@ -32,7 +31,7 @@ const removeMember = () => {
         return;
     }
 
-    router.visit(destroyMember([props.team.slug, props.member.id]), {
+    router.visit(destroyMember(props.member.id), {
         onStart: () => (processing.value = true),
         onFinish: () => (processing.value = false),
         onSuccess: () => emit('update:open', false),
@@ -44,16 +43,16 @@ const removeMember = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Remove team member</DialogTitle>
+                <DialogTitle>Remover membro</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to remove
-                    <strong>{{ props.member?.name }}</strong> from this team?
+                    Tem certeza de que deseja remover
+                    <strong>{{ props.member?.name }}</strong> da equipe?
                 </DialogDescription>
             </DialogHeader>
 
             <DialogFooter class="gap-2">
                 <DialogClose as-child>
-                    <Button variant="secondary"> Cancel </Button>
+                    <Button variant="secondary"> Cancelar </Button>
                 </DialogClose>
 
                 <Button
@@ -62,7 +61,7 @@ const removeMember = () => {
                     :disabled="processing"
                     @click="removeMember"
                 >
-                    Remove member
+                    Remover membro
                 </Button>
             </DialogFooter>
         </DialogContent>

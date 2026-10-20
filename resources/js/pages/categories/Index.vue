@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { create, destroy, edit, index } from '@/routes/categories';
-import type { Category, Team } from '@/types';
+import type { Category } from '@/types';
 
 type Props = {
     categories: Category[];
@@ -12,14 +12,12 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const page = usePage();
-
 defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
+    layout: () => ({
         breadcrumbs: [
             {
                 title: 'Categorias',
-                href: props.currentTeam ? index(props.currentTeam.slug) : '/',
+                href: index(),
             },
         ],
     }),
@@ -34,7 +32,7 @@ const confirmDelete = (category: Category) => {
 
     deletingId.value = category.id;
 
-    router.visit(destroy([page.props.currentTeam!.slug, category.id]), {
+    router.visit(destroy(category.id), {
         onFinish: () => {
             deletingId.value = null;
         },
@@ -54,7 +52,7 @@ const confirmDelete = (category: Category) => {
             </div>
             <a
                 v-if="canManageCategories"
-                :href="create(page.props.currentTeam!.slug).url"
+                :href="create().url"
                 class="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs tracking-widest uppercase text-primary-foreground transition-colors hover:opacity-90"
             >
                 <Plus class="h-3.5 w-3.5" />
@@ -90,7 +88,7 @@ const confirmDelete = (category: Category) => {
 
                 <div v-if="canManageCategories" class="flex items-center gap-1">
                     <a
-                        :href="edit([page.props.currentTeam!.slug, category.id]).url"
+                        :href="edit(category.id).url"
                         class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     >
                         <Pencil class="h-3.5 w-3.5" />

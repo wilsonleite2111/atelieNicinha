@@ -5,7 +5,8 @@ import { ShoppingBag } from 'lucide-vue-next';
 import { Toaster } from '@/components/ui/sonner';
 import { Dialog } from '@/components/ui/dialog';
 import DialogScrollContent from '@/components/ui/dialog/DialogScrollContent.vue';
-import { login, logout, register } from '@/routes';
+import { whatsappUrl } from '@/lib/whatsapp';
+import { dashboard, login, logout, register } from '@/routes';
 import type { ProductImage } from '@/types';
 
 type PublicProduct = {
@@ -23,8 +24,9 @@ const props = withDefaults(
         canRegister: boolean;
         products: PublicProduct[];
         storeTeamSlug: string | null;
+        whatsapp: string | null;
     }>(),
-    { canRegister: true, products: () => [], storeTeamSlug: null }
+    { canRegister: true, products: () => [], storeTeamSlug: null, whatsapp: null }
 );
 
 const isScrolled = ref(false);
@@ -103,7 +105,7 @@ const filteredProducts = computed(() => props.products);
                     <template v-if="$page.props.auth.user">
                         <Link
                             v-if="$page.props.currentTeam && $page.props.currentTeam.role !== 'member'"
-                            :href="`/${$page.props.currentTeam.slug}/dashboard`"
+                            :href="dashboard().url"
                             class="rounded-full bg-[#7C5C3A] px-5 py-2 text-xs text-white transition-all hover:bg-[#5C4028]"
                         >
                             Painel
@@ -356,7 +358,8 @@ const filteredProducts = computed(() => props.products);
                     Quer uma joia com as flores do seu buquê, uma lembrança de data especial ou uma peça de macramê personalizada? Entre em contato — vamos criar algo único para você.
                 </p>
                 <a
-                    href="https://wa.me/5541995291049"
+                    v-if="whatsapp"
+                    :href="whatsappUrl(whatsapp)"
                     target="_blank"
                     class="inline-flex items-center gap-3 rounded-full bg-white px-8 py-4 text-sm font-medium tracking-widest uppercase text-[#7C5C3A] transition-all hover:bg-[#F5EFE8] hover:shadow-xl"
                 >
@@ -435,9 +438,9 @@ const filteredProducts = computed(() => props.products);
                             </div>
 
                             <!-- Buy / Login -->
-                            <div v-if="$page.props.auth?.user">
+                            <div v-if="$page.props.auth?.user && whatsapp">
                                 <a
-                                    :href="`https://wa.me/5541995291049?text=Olá! Tenho interesse no produto: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`"
+                                    :href="whatsappUrl(whatsapp, `Olá! Tenho interesse no produto: ${selectedProduct.name} (${formatPrice(selectedProduct.price)})`)"
                                     target="_blank"
                                     class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#7C5C3A] px-6 py-3 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
                                 >
@@ -448,7 +451,7 @@ const filteredProducts = computed(() => props.products);
                                     Você será direcionado para o WhatsApp para finalizar seu pedido.
                                 </p>
                             </div>
-                            <div v-else class="flex flex-col gap-3">
+                            <div v-else-if="!$page.props.auth?.user" class="flex flex-col gap-3">
                                 <p class="text-center text-sm text-[#5C4A32]">Faça login para comprar este produto.</p>
                                 <Link
                                     :href="login().url"

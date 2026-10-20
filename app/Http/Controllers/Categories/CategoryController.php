@@ -6,7 +6,6 @@ use App\Enums\TeamPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Categories\SaveCategoryRequest;
 use App\Models\Category;
-use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,11 +14,13 @@ use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function index(Request $request, Team $current_team): Response
+    public function index(Request $request): Response
     {
-        Gate::authorize('viewAny', [Category::class, $current_team]);
+        $team = $request->user()->currentTeam;
 
-        $categories = $current_team->categories()
+        Gate::authorize('viewAny', [Category::class, $team]);
+
+        $categories = $team->categories()
             ->orderBy('name')
             ->get()
             ->map(fn (Category $c) => [
@@ -30,31 +31,37 @@ class CategoryController extends Controller
 
         return Inertia::render('categories/Index', [
             'categories' => $categories,
-            'canManageCategories' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageProducts),
+            'canManageCategories' => $request->user()->hasTeamPermission($team, TeamPermission::ManageProducts),
         ]);
     }
 
-    public function create(Request $request, Team $current_team): Response
+    public function create(Request $request): Response
     {
-        Gate::authorize('create', [Category::class, $current_team]);
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('create', [Category::class, $team]);
 
         return Inertia::render('categories/Create');
     }
 
-    public function store(SaveCategoryRequest $request, Team $current_team): RedirectResponse
+    public function store(SaveCategoryRequest $request): RedirectResponse
     {
-        Gate::authorize('create', [Category::class, $current_team]);
+        $team = $request->user()->currentTeam;
 
-        $current_team->categories()->create($request->validated());
+        Gate::authorize('create', [Category::class, $team]);
+
+        $team->categories()->create($request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Categoria criada.']);
 
-        return to_route('categories.index', ['current_team' => $current_team->slug]);
+        return to_route('categories.index');
     }
 
-    public function edit(Request $request, Team $current_team, Category $category): Response
+    public function edit(Request $request, Category $category): Response
     {
-        abort_unless($category->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($category->team_id === $team->id, 404);
 
         Gate::authorize('update', $category);
 
@@ -67,9 +74,11 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function update(SaveCategoryRequest $request, Team $current_team, Category $category): RedirectResponse
+    public function update(SaveCategoryRequest $request, Category $category): RedirectResponse
     {
-        abort_unless($category->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($category->team_id === $team->id, 404);
 
         Gate::authorize('update', $category);
 
@@ -77,12 +86,14 @@ class CategoryController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Categoria atualizada.']);
 
-        return to_route('categories.index', ['current_team' => $current_team->slug]);
+        return to_route('categories.index');
     }
 
-    public function destroy(Request $request, Team $current_team, Category $category): RedirectResponse
+    public function destroy(Request $request, Category $category): RedirectResponse
     {
-        abort_unless($category->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($category->team_id === $team->id, 404);
 
         Gate::authorize('delete', $category);
 
@@ -90,6 +101,6 @@ class CategoryController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Categoria excluída.']);
 
-        return to_route('categories.index', ['current_team' => $current_team->slug]);
+        return to_route('categories.index');
     }
 }

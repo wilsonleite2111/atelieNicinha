@@ -3,7 +3,6 @@ import { Form, Head, router } from '@inertiajs/vue3';
 import { ChevronDown, Mail, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import CancelInvitationModal from '@/components/CancelInvitationModal.vue';
-import DeleteTeamModal from '@/components/DeleteTeamModal.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import InviteMemberModal from '@/components/InviteMemberModal.vue';
@@ -26,7 +25,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useInitials } from '@/composables/useInitials';
-import { edit, index, update } from '@/routes/teams';
+import { edit, update } from '@/routes/teams';
 import { update as updateMember } from '@/routes/teams/members';
 import type {
     RoleOption,
@@ -50,12 +49,8 @@ defineOptions({
     layout: (props: { team: Team }) => ({
         breadcrumbs: [
             {
-                title: 'Teams',
-                href: index(),
-            },
-            {
                 title: props.team.name,
-                href: edit(props.team.slug),
+                href: edit(),
             },
         ],
     }),
@@ -64,7 +59,6 @@ defineOptions({
 const { getInitials } = useInitials();
 
 const inviteDialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
 const removeMemberDialogOpen = ref(false);
 const memberToRemove = ref<TeamMember | null>(null);
 const cancelInvitationDialogOpen = ref(false);
@@ -72,12 +66,12 @@ const invitationToCancel = ref<TeamInvitation | null>(null);
 
 const pageTitle = computed(() =>
     props.permissions.canUpdateTeam
-        ? `Edit ${props.team.name}`
-        : `View ${props.team.name}`,
+        ? `Editar ${props.team.name}`
+        : props.team.name,
 );
 
 const updateMemberRole = (member: TeamMember, newRole: string) => {
-    router.visit(updateMember([props.team.slug, member.id]), {
+    router.visit(updateMember(member.id), {
         data: { role: newRole },
         preserveScroll: true,
     });
@@ -104,17 +98,17 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
         <div v-if="permissions.canUpdateTeam" class="space-y-6">
             <Heading
                 variant="small"
-                title="Team settings"
-                description="Update your team name and settings"
+                title="Dados da equipe"
+                description="Atualize o nome e o WhatsApp da loja"
             />
 
             <Form
-                v-bind="update.form(team.slug)"
+                v-bind="update.form()"
                 class="space-y-6"
                 v-slot="{ errors, processing }"
             >
                 <div class="grid gap-2">
-                    <Label for="name">Team name</Label>
+                    <Label for="name">Nome da equipe</Label>
                     <Input
                         id="name"
                         name="name"
@@ -125,13 +119,31 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                     <InputError :message="errors.name" />
                 </div>
 
+                <div class="grid gap-2">
+                    <Label for="whatsapp">WhatsApp</Label>
+                    <Input
+                        id="whatsapp"
+                        name="whatsapp"
+                        type="tel"
+                        inputmode="tel"
+                        data-test="team-whatsapp-input"
+                        :default-value="team.whatsapp ?? ''"
+                        placeholder="(41) 99999-9999"
+                    />
+                    <p class="text-sm text-muted-foreground">
+                        Número usado nos botões "Comprar via WhatsApp" do site.
+                        Deixe em branco para ocultá-los.
+                    </p>
+                    <InputError :message="errors.whatsapp" />
+                </div>
+
                 <div class="flex items-center gap-4">
                     <Button
                         type="submit"
                         data-test="team-save-button"
                         :disabled="processing"
                     >
-                        Save
+                        Salvar
                     </Button>
                 </div>
             </Form>
@@ -146,10 +158,10 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
             <div class="flex items-center justify-between">
                 <Heading
                     variant="small"
-                    title="Team members"
+                    title="Membros"
                     :description="
                         permissions.canCreateInvitation
-                            ? 'Manage who belongs to this team'
+                            ? 'Gerencie quem faz parte da equipe e o perfil de cada um'
                             : ''
                     "
                 />
@@ -159,7 +171,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                     data-test="invite-member-button"
                     @click="inviteDialogOpen = true"
                 >
-                    <UserPlus /> Invite member
+                    <UserPlus /> Convidar membro
                 </Button>
             </div>
 
@@ -245,7 +257,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Remove member</p>
+                                    <p>Remover membro</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -258,8 +270,8 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
         <div v-if="invitations.length > 0" class="space-y-6">
             <Heading
                 variant="small"
-                title="Pending invitations"
-                description="Invitations that haven't been accepted yet"
+                title="Convites pendentes"
+                description="Convites que ainda não foram aceitos"
             />
 
             <div class="space-y-3">
@@ -298,71 +310,31 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Cancel invitation</p>
+                                <p>Cancelar convite</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
                 </div>
             </div>
         </div>
-
-        <!-- Danger Zone -->
-        <div
-            v-if="permissions.canDeleteTeam && !team.isPersonal"
-            class="space-y-6"
-        >
-            <Heading
-                variant="small"
-                title="Delete team"
-                description="Permanently delete your team"
-            />
-            <div
-                class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
-            >
-                <div
-                    class="relative space-y-0.5 text-red-600 dark:text-red-100"
-                >
-                    <p class="font-medium">Warning</p>
-                    <p class="text-sm">
-                        Please proceed with caution, this cannot be undone.
-                    </p>
-                </div>
-                <Button
-                    data-test="delete-team-button"
-                    variant="destructive"
-                    @click="deleteDialogOpen = true"
-                    >Delete team</Button
-                >
-            </div>
-        </div>
     </div>
 
     <InviteMemberModal
         v-if="permissions.canCreateInvitation"
-        :team="team"
         :available-roles="availableRoles"
         :open="inviteDialogOpen"
         @update:open="inviteDialogOpen = $event"
     />
 
     <RemoveMemberModal
-        :team="team"
         :member="memberToRemove"
         :open="removeMemberDialogOpen"
         @update:open="removeMemberDialogOpen = $event"
     />
 
     <CancelInvitationModal
-        :team="team"
         :invitation="invitationToCancel"
         :open="cancelInvitationDialogOpen"
         @update:open="cancelInvitationDialogOpen = $event"
-    />
-
-    <DeleteTeamModal
-        v-if="permissions.canDeleteTeam && !team.isPersonal"
-        :team="team"
-        :open="deleteDialogOpen"
-        @update:open="deleteDialogOpen = $event"
     />
 </template>

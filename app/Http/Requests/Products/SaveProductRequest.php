@@ -13,7 +13,7 @@ class SaveProductRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $team = $this->route('current_team');
+        $team = $this->user()?->currentTeam;
 
         return $team !== null && Gate::check('create', [Product::class, $team]);
     }
@@ -36,7 +36,7 @@ class SaveProductRequest extends FormRequest
             'category_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('categories', 'id')->where('team_id', $this->route('current_team')->id),
+                Rule::exists('categories', 'id')->where('team_id', $this->user()?->currentTeam->id),
             ],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],

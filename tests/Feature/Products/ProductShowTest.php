@@ -22,6 +22,15 @@ class ProductShowTest extends TestCase
             ->assertOk();
     }
 
+    public function test_product_page_receives_store_whatsapp(): void
+    {
+        $team = Team::factory()->create(['whatsapp' => '5541995291049']);
+        $product = Product::factory()->for($team)->create(['active' => true]);
+
+        $this->get(route('products.public.show', $product))
+            ->assertInertia(fn ($page) => $page->where('whatsapp', '5541995291049'));
+    }
+
     public function test_guest_cannot_view_inactive_product(): void
     {
         $team = Team::factory()->create();
@@ -50,7 +59,7 @@ class ProductShowTest extends TestCase
         $owner->update(['current_team_id' => $team->id]);
 
         $this->actingAs($owner)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto com Tamanho',
                 'size' => 'M',
                 'price' => '49.90',

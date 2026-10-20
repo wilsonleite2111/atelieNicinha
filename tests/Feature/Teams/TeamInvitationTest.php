@@ -22,15 +22,16 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('teams.invitations.store', $team), [
+            ->post(route('teams.invitations.store'), [
                 'email' => 'invited@example.com',
                 'role' => TeamRole::Member->value,
             ]);
 
-        $response->assertRedirect(route('teams.edit', $team));
+        $response->assertRedirect(route('teams.edit'));
 
         $this->assertDatabaseHas('team_invitations', [
             'team_id' => $team->id,
@@ -48,16 +49,18 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
         $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+        $admin->switchTeam($team);
 
         $response = $this
             ->actingAs($admin)
-            ->post(route('teams.invitations.store', $team), [
+            ->post(route('teams.invitations.store'), [
                 'email' => 'invited@example.com',
                 'role' => TeamRole::Member->value,
             ]);
 
-        $response->assertRedirect(route('teams.edit', $team));
+        $response->assertRedirect(route('teams.edit'));
     }
 
     public function test_existing_team_members_cannot_be_invited()
@@ -69,11 +72,13 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
         $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+        $member->switchTeam($team);
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('teams.invitations.store', $team), [
+            ->post(route('teams.invitations.store'), [
                 'email' => 'member@example.com',
                 'role' => TeamRole::Member->value,
             ]);
@@ -88,6 +93,7 @@ class TeamInvitationTest extends TestCase
         $owner = User::factory()->create();
         $team = Team::factory()->create();
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         TeamInvitation::factory()->create([
             'team_id' => $team->id,
@@ -97,7 +103,7 @@ class TeamInvitationTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('teams.invitations.store', $team), [
+            ->post(route('teams.invitations.store'), [
                 'email' => 'invited@example.com',
                 'role' => TeamRole::Member->value,
             ]);
@@ -112,11 +118,13 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
         $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+        $member->switchTeam($team);
 
         $response = $this
             ->actingAs($member)
-            ->post(route('teams.invitations.store', $team), [
+            ->post(route('teams.invitations.store'), [
                 'email' => 'invited@example.com',
                 'role' => TeamRole::Member->value,
             ]);
@@ -130,6 +138,7 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         $invitation = TeamInvitation::factory()->create([
             'team_id' => $team->id,
@@ -138,9 +147,9 @@ class TeamInvitationTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->delete(route('teams.invitations.destroy', [$team, $invitation]));
+            ->delete(route('teams.invitations.destroy', $invitation));
 
-        $response->assertRedirect(route('teams.edit', $team));
+        $response->assertRedirect(route('teams.edit'));
 
         $this->assertDatabaseMissing('team_invitations', [
             'id' => $invitation->id,
@@ -154,6 +163,7 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         $invitation = TeamInvitation::factory()->create([
             'team_id' => $team->id,
@@ -179,6 +189,7 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         $invitation = TeamInvitation::factory()->create([
             'team_id' => $team->id,
@@ -202,6 +213,7 @@ class TeamInvitationTest extends TestCase
         $team = Team::factory()->create();
 
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
 
         $invitation = TeamInvitation::factory()->expired()->create([
             'team_id' => $team->id,

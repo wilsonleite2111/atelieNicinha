@@ -6,7 +6,6 @@ use App\Enums\TeamPermission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Products\SaveProductRequest;
 use App\Models\Product;
-use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,13 +15,15 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(Request $request, Team $current_team): Response
+    public function index(Request $request): Response
     {
-        Gate::authorize('viewAny', [Product::class, $current_team]);
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('viewAny', [Product::class, $team]);
 
         $search = (string) $request->query('search', '');
 
-        $query = $current_team->products()->orderBy('name');
+        $query = $team->products()->orderBy('name');
 
         if ($search) {
             $query->where('name', 'ilike', "%{$search}%");
@@ -40,16 +41,18 @@ class ProductController extends Controller
         return Inertia::render('products/Index', [
             'products' => $products,
             'search' => $search,
-            'canManageProducts' => $request->user()->hasTeamPermission($current_team, TeamPermission::ManageProducts),
+            'canManageProducts' => $request->user()->hasTeamPermission($team, TeamPermission::ManageProducts),
         ]);
     }
 
-    public function create(Request $request, Team $current_team): Response
+    public function create(Request $request): Response
     {
-        Gate::authorize('create', [Product::class, $current_team]);
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('create', [Product::class, $team]);
 
         return Inertia::render('products/Create', [
-            'categories' => $current_team->categories()
+            'categories' => $team->categories()
                 ->where('active', true)
                 ->orderBy('name')
                 ->get()
@@ -58,12 +61,14 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(SaveProductRequest $request, Team $current_team): RedirectResponse
+    public function store(SaveProductRequest $request): RedirectResponse
     {
-        Gate::authorize('create', [Product::class, $current_team]);
+        $team = $request->user()->currentTeam;
+
+        Gate::authorize('create', [Product::class, $team]);
 
         try {
-            $product = $current_team->products()->create(
+            $product = $team->products()->create(
                 $request->safe()->except(['images', 'delete_images'])
             );
 
@@ -73,7 +78,7 @@ class ProductController extends Controller
         } catch (\Throwable $e) {
             Log::error('Product store failed', [
                 'message' => $e->getMessage(),
-                'team_id' => $current_team->id,
+                'team_id' => $team->id,
                 'user_id' => $request->user()->id,
             ]);
             Inertia::flash('toast', ['type' => 'error', 'message' => 'Erro ao salvar o produto. Tente novamente.']);
@@ -81,14 +86,16 @@ class ProductController extends Controller
             return back();
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Produto criado.')]);
 
-        return to_route('products.index', ['current_team' => $current_team->slug]);
+        return to_route('products.index');
     }
 
-    public function edit(Request $request, Team $current_team, Product $product): Response
+    public function edit(Request $request, Product $product): Response
     {
-        abort_unless($product->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($product->team_id === $team->id, 404);
 
         Gate::authorize('update', $product);
 
@@ -106,7 +113,7 @@ class ProductController extends Controller
                     'url' => $m->getUrl(),
                 ]),
             ],
-            'categories' => $current_team->categories()
+            'categories' => $team->categories()
                 ->where('active', true)
                 ->orderBy('name')
                 ->get()
@@ -115,9 +122,11 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(SaveProductRequest $request, Team $current_team, Product $product): RedirectResponse
+    public function update(SaveProductRequest $request, Product $product): RedirectResponse
     {
-        abort_unless($product->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($product->team_id === $team->id, 404);
 
         Gate::authorize('update', $product);
 
@@ -135,7 +144,7 @@ class ProductController extends Controller
         } catch (\Throwable $e) {
             Log::error('Product update failed', [
                 'message' => $e->getMessage(),
-                'team_id' => $current_team->id,
+                'team_id' => $team->id,
                 'product_id' => $product->id,
                 'user_id' => $request->user()->id,
             ]);
@@ -144,21 +153,23 @@ class ProductController extends Controller
             return back();
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Produto atualizado.')]);
 
-        return to_route('products.index', ['current_team' => $current_team->slug]);
+        return to_route('products.index');
     }
 
-    public function destroy(Request $request, Team $current_team, Product $product): RedirectResponse
+    public function destroy(Request $request, Product $product): RedirectResponse
     {
-        abort_unless($product->team_id === $current_team->id, 404);
+        $team = $request->user()->currentTeam;
+
+        abort_unless($product->team_id === $team->id, 404);
 
         Gate::authorize('delete', $product);
 
         $product->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Produto excluído.')]);
 
-        return to_route('products.index', ['current_team' => $current_team->slug]);
+        return to_route('products.index');
     }
 }

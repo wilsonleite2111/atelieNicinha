@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Teams;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\UpdateTeamMemberRequest;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -16,8 +16,10 @@ class TeamMemberController extends Controller
     /**
      * Update the specified team member's role.
      */
-    public function update(UpdateTeamMemberRequest $request, Team $team, User $user): RedirectResponse
+    public function update(UpdateTeamMemberRequest $request, User $user): RedirectResponse
     {
+        $team = $request->user()->currentTeam;
+
         Gate::authorize('updateMember', $team);
 
         $newRole = TeamRole::from($request->validated('role'));
@@ -27,19 +29,21 @@ class TeamMemberController extends Controller
             ->firstOrFail()
             ->update(['role' => $newRole]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Perfil do membro atualizado.']);
 
-        return to_route('teams.edit', ['team' => $team->slug]);
+        return to_route('teams.edit');
     }
 
     /**
      * Remove the specified team member.
      */
-    public function destroy(Team $team, User $user): RedirectResponse
+    public function destroy(Request $request, User $user): RedirectResponse
     {
+        $team = $request->user()->currentTeam;
+
         Gate::authorize('removeMember', $team);
 
-        abort_if($team->owner()?->is($user), 403, __('The team owner cannot be removed.'));
+        abort_if($team->owner()?->is($user), 403, 'O proprietário da equipe não pode ser removido.');
 
         $team->memberships()
             ->where('user_id', $user->id)
@@ -49,8 +53,8 @@ class TeamMemberController extends Controller
             $user->switchTeam($user->personalTeam());
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Member removed.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Membro removido.']);
 
-        return to_route('teams.edit', ['team' => $team->slug]);
+        return to_route('teams.edit');
     }
 }

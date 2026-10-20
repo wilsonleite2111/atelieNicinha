@@ -38,6 +38,7 @@ class WelcomeController extends Controller
             'canRegister' => Features::enabled(Features::registration()),
             'products' => $products,
             'storeTeamSlug' => $storeTeam?->slug,
+            'whatsapp' => $storeTeam?->whatsapp,
         ]);
     }
 }

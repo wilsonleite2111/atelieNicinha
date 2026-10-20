@@ -29,7 +29,7 @@ class UniqueTeamInvitation implements ValidationRule
             ->exists();
 
         if ($isMember) {
-            $fail(__('This user is already a member of the team.'));
+            $fail(__('Este usuário já é membro da equipe.'));
 
             return;
         }
@@ -44,7 +44,7 @@ class UniqueTeamInvitation implements ValidationRule
             ->exists();
 
         if ($hasPendingInvitation) {
-            $fail(__('An invitation has already been sent to this email address.'));
+            $fail(__('Já foi enviado um convite para este endereço de e-mail.'));
         }
     }
 }

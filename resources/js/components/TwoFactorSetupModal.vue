@@ -46,26 +46,27 @@ const pinInputContainerRef = useTemplateRef('pinInputContainerRef');
 const modalConfig = computed<TwoFactorConfigContent>(() => {
     if (props.twoFactorEnabled) {
         return {
-            title: 'Two-factor authentication enabled',
+            title: 'Verificação em duas etapas ativada',
             description:
-                'Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.',
-            buttonText: 'Close',
+                'A verificação em duas etapas está ativada. Escaneie o QR code ou digite a chave de configuração no seu aplicativo autenticador.',
+            buttonText: 'Fechar',
         };
     }
 
     if (showVerificationStep.value) {
         return {
-            title: 'Verify authentication code',
-            description: 'Enter the 6-digit code from your authenticator app',
-            buttonText: 'Continue',
+            title: 'Confirme o código de verificação',
+            description:
+                'Digite o código de 6 dígitos do seu aplicativo autenticador',
+            buttonText: 'Continuar',
         };
     }
 
     return {
-        title: 'Enable two-factor authentication',
+        title: 'Ativar verificação em duas etapas',
         description:
-            'To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app',
-        buttonText: 'Continue',
+            'Para concluir, escaneie o QR code ou digite a chave de configuração no seu aplicativo autenticador',
+        buttonText: 'Continuar',
     };
 });
 
@@ -171,7 +172,10 @@ watch(
                                     class="relative z-10 overflow-hidden border p-5"
                                 >
                                     <img
-                                        :src="'data:image/svg+xml;base64,' + btoa(qrCodeSvg ?? '')"
+                                        :src="
+                                            'data:image/svg+xml;base64,' +
+                                            btoa(qrCodeSvg ?? '')
+                                        "
                                         alt="QR code para autenticação de dois fatores"
                                         class="flex aspect-square size-full items-center justify-center"
                                         :style="{
@@ -198,7 +202,7 @@ watch(
                                 class="absolute inset-0 top-1/2 h-px w-full bg-border"
                             />
                             <span class="relative bg-card px-2 py-1"
-                                >or, enter the code manually</span
+                                >ou digite o código manualmente</span
                             >
                         </div>
 
@@ -280,14 +284,14 @@ watch(
                                     @click="showVerificationStep = false"
                                     :disabled="processing"
                                 >
-                                    Back
+                                    Voltar
                                 </Button>
                                 <Button
                                     type="submit"
                                     class="w-auto flex-1"
                                     :disabled="processing || code.length < 6"
                                 >
-                                    Confirm
+                                    Confirmar
                                 </Button>
                             </div>
                         </div>

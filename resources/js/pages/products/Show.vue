@@ -2,6 +2,7 @@
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, ShoppingBag } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { whatsappUrl } from '@/lib/whatsapp';
 import { login } from '@/routes';
 import type { ProductImage } from '@/types';
 
@@ -14,6 +15,7 @@ type Props = {
         price: string;
         images: ProductImage[];
     };
+    whatsapp: string | null;
 };
 
 const props = defineProps<Props>();
@@ -114,9 +116,9 @@ const formatPrice = (price: string) =>
                     </div>
 
                     <!-- Buy / Login -->
-                    <div v-if="$page.props.auth?.user">
+                    <div v-if="$page.props.auth?.user && whatsapp">
                         <a
-                            :href="`https://wa.me/5500000000000?text=Olá! Tenho interesse no produto: ${product.name} (${formatPrice(product.price)})`"
+                            :href="whatsappUrl(whatsapp, `Olá! Tenho interesse no produto: ${product.name} (${formatPrice(product.price)})`)"
                             target="_blank"
                             class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#7C5C3A] px-8 py-4 text-sm tracking-widest uppercase text-white transition-all duration-300 hover:bg-[#5C4028] hover:shadow-lg"
                         >
@@ -127,7 +129,7 @@ const formatPrice = (price: string) =>
                             Você será direcionado para o WhatsApp para finalizar seu pedido.
                         </p>
                     </div>
-                    <div v-else class="flex flex-col gap-3">
+                    <div v-else-if="!$page.props.auth?.user" class="flex flex-col gap-3">
                         <p class="text-center text-sm text-[#5C4A32]">
                             Faça login para comprar este produto.
                         </p>

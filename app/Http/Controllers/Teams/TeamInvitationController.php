@@ -6,10 +6,10 @@ use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\AcceptTeamInvitationRequest;
 use App\Http\Requests\Teams\CreateTeamInvitationRequest;
-use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Notifications\Teams\TeamInvitation as TeamInvitationNotification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
@@ -20,8 +20,10 @@ class TeamInvitationController extends Controller
     /**
      * Store a newly created invitation.
      */
-    public function store(CreateTeamInvitationRequest $request, Team $team): RedirectResponse
+    public function store(CreateTeamInvitationRequest $request): RedirectResponse
     {
+        $team = $request->user()->currentTeam;
+
         Gate::authorize('inviteMember', $team);
 
         $invitation = $team->invitations()->create([
@@ -34,25 +36,27 @@ class TeamInvitationController extends Controller
         Notification::route('mail', $invitation->email)
             ->notify(new TeamInvitationNotification($invitation));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation sent.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Convite enviado.']);
 
-        return to_route('teams.edit', ['team' => $team->slug]);
+        return to_route('teams.edit');
     }
 
     /**
      * Cancel the specified invitation.
      */
-    public function destroy(Team $team, TeamInvitation $invitation): RedirectResponse
+    public function destroy(Request $request, TeamInvitation $invitation): RedirectResponse
     {
+        $team = $request->user()->currentTeam;
+
         abort_unless($invitation->team_id === $team->id, 404);
 
         Gate::authorize('cancelInvitation', $team);
 
         $invitation->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation cancelled.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Convite cancelado.']);
 
-        return to_route('teams.edit', ['team' => $team->slug]);
+        return to_route('teams.edit');
     }
 
     /**

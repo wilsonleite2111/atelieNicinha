@@ -22,7 +22,7 @@ class ProductTest extends TestCase
         [$owner, $team] = $this->ownerWithTeam();
 
         $this->actingAs($owner)
-            ->get(route('products.index', $team))
+            ->get(route('products.index'))
             ->assertOk();
     }
 
@@ -31,7 +31,7 @@ class ProductTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->get(route('products.index', $team))
+            ->get(route('products.index'))
             ->assertOk();
     }
 
@@ -40,7 +40,7 @@ class ProductTest extends TestCase
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
-            ->get(route('products.index', $team))
+            ->get(route('products.index'))
             ->assertRedirect(route('home'));
     }
 
@@ -48,7 +48,7 @@ class ProductTest extends TestCase
     {
         $team = Team::factory()->create();
 
-        $this->get(route('products.index', $team))
+        $this->get(route('products.index'))
             ->assertRedirect(route('login'));
     }
 
@@ -59,7 +59,7 @@ class ProductTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->get(route('products.create', $team))
+            ->get(route('products.create'))
             ->assertOk();
     }
 
@@ -68,7 +68,7 @@ class ProductTest extends TestCase
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
-            ->get(route('products.create', $team))
+            ->get(route('products.create'))
             ->assertRedirect(route('home'));
     }
 
@@ -77,11 +77,11 @@ class ProductTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto Teste',
                 'price' => '9.99',
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
 
         $this->assertDatabaseHas('products', [
             'team_id' => $team->id,
@@ -94,7 +94,7 @@ class ProductTest extends TestCase
         [, $team, , $member] = $this->teamWithRoles();
 
         $this->actingAs($member)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto Teste',
                 'price' => '9.99',
             ])
@@ -106,7 +106,7 @@ class ProductTest extends TestCase
         [$owner, $team] = $this->ownerWithTeam();
 
         $this->actingAs($owner)
-            ->post(route('products.store', $team), [])
+            ->post(route('products.store'), [])
             ->assertSessionHasErrors(['name', 'price']);
     }
 
@@ -115,11 +115,11 @@ class ProductTest extends TestCase
         [$owner, $team] = $this->ownerWithTeam();
 
         $this->actingAs($owner)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto Vírgula',
                 'price' => '1,00',
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
 
         $this->assertDatabaseHas('products', [
             'name' => 'Produto Vírgula',
@@ -135,7 +135,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($admin)
-            ->get(route('products.edit', [$team, $product]))
+            ->get(route('products.edit', $product))
             ->assertOk();
     }
 
@@ -145,7 +145,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($member)
-            ->get(route('products.edit', [$team, $product]))
+            ->get(route('products.edit', $product))
             ->assertRedirect(route('home'));
     }
 
@@ -155,11 +155,11 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create(['name' => 'Nome Antigo']);
 
         $this->actingAs($admin)
-            ->patch(route('products.update', [$team, $product]), [
+            ->patch(route('products.update', $product), [
                 'name' => 'Nome Novo',
                 'price' => '19.99',
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
 
         $this->assertEquals('Nome Novo', $product->fresh()->name);
     }
@@ -170,7 +170,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($member)
-            ->patch(route('products.update', [$team, $product]), [
+            ->patch(route('products.update', $product), [
                 'name' => 'Nome Hackeado',
                 'price' => '0.01',
             ])
@@ -185,8 +185,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($owner)
-            ->delete(route('products.destroy', [$team, $product]))
-            ->assertRedirect(route('products.index', $team));
+            ->delete(route('products.destroy', $product))
+            ->assertRedirect(route('products.index'));
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
@@ -197,8 +197,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($admin)
-            ->delete(route('products.destroy', [$team, $product]))
-            ->assertRedirect(route('products.index', $team));
+            ->delete(route('products.destroy', $product))
+            ->assertRedirect(route('products.index'));
 
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
@@ -209,7 +209,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->for($team)->create();
 
         $this->actingAs($member)
-            ->delete(route('products.destroy', [$team, $product]))
+            ->delete(route('products.destroy', $product))
             ->assertRedirect(route('home'));
     }
 
@@ -221,12 +221,12 @@ class ProductTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto com Imagem',
                 'price' => '49.90',
                 'images' => [UploadedFile::fake()->image('photo.jpg')],
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
 
         $product = Product::where('name', 'Produto com Imagem')->firstOrFail();
         $this->assertCount(1, $product->getMedia('images'));
@@ -240,12 +240,12 @@ class ProductTest extends TestCase
         $media = $product->addMedia(UploadedFile::fake()->image('old.jpg'))->toMediaCollection('images');
 
         $this->actingAs($admin)
-            ->patch(route('products.update', [$team, $product]), [
+            ->patch(route('products.update', $product), [
                 'name' => $product->name,
                 'price' => $product->price,
                 'delete_images' => [$media->id],
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
 
         $this->assertCount(0, $product->fresh()->getMedia('images'));
     }
@@ -255,7 +255,7 @@ class ProductTest extends TestCase
         [, $team, $admin] = $this->teamWithRoles();
 
         $this->actingAs($admin)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto',
                 'price' => '9.99',
                 'images' => [UploadedFile::fake()->create('document.pdf', 100, 'application/pdf')],
@@ -270,7 +270,7 @@ class ProductTest extends TestCase
         $images = array_map(fn ($i) => UploadedFile::fake()->image("photo{$i}.jpg"), range(0, 10));
 
         $this->actingAs($admin)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto',
                 'price' => '9.99',
                 'images' => $images,
@@ -286,12 +286,12 @@ class ProductTest extends TestCase
         $images = array_map(fn ($i) => UploadedFile::fake()->image("photo{$i}.jpg"), range(0, 9));
 
         $this->actingAs($admin)
-            ->post(route('products.store', $team), [
+            ->post(route('products.store'), [
                 'name' => 'Produto',
                 'price' => '9.99',
                 'images' => $images,
             ])
-            ->assertRedirect(route('products.index', $team));
+            ->assertRedirect(route('products.index'));
     }
 
     // --- CROSS-TEAM ISOLATION ---
@@ -304,7 +304,7 @@ class ProductTest extends TestCase
         $foreignProduct = Product::factory()->for($otherTeam)->create();
 
         $this->actingAs($admin)
-            ->patch(route('products.update', [$team, $foreignProduct]), [
+            ->patch(route('products.update', $foreignProduct), [
                 'name' => 'Produto Roubado',
                 'price' => '1.00',
             ])
@@ -321,6 +321,7 @@ class ProductTest extends TestCase
         $owner = User::factory()->create();
         $team = Team::factory()->create();
         $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+        $owner->switchTeam($team);
         $owner->update(['current_team_id' => $team->id]);
 
         return [$owner, $team];
@@ -335,9 +336,11 @@ class ProductTest extends TestCase
 
         $admin = User::factory()->create();
         $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+        $admin->switchTeam($team);
 
         $member = User::factory()->create();
         $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+        $member->switchTeam($team);
 
         return [$owner, $team, $admin, $member];
     }

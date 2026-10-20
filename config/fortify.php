@@ -73,7 +73,45 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/admin',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Paths
+    |--------------------------------------------------------------------------
+    |
+    | Portuguese URLs for the routes Fortify registers, keyed by route name
+    | (nested, since config() treats dots in keys as nesting).
+    |
+    */
+
+    'paths' => [
+        'login' => '/entrar',
+        'logout' => '/sair',
+        'register' => '/cadastro',
+        'password' => [
+            'request' => '/esqueci-a-senha',
+            'email' => '/esqueci-a-senha',
+            'reset' => '/redefinir-senha/{token}',
+            'update' => '/redefinir-senha',
+            'confirm' => '/confirmar-senha',
+            'confirmation' => '/confirmar-senha/status',
+        ],
+        'verification' => [
+            'notice' => '/verificar-email',
+            'verify' => '/verificar-email/{id}/{hash}',
+            'send' => '/verificar-email/reenviar',
+        ],
+        'two-factor' => [
+            'login' => '/verificacao-em-duas-etapas',
+            'enable' => '/admin/configuracoes/duas-etapas',
+            'disable' => '/admin/configuracoes/duas-etapas',
+            'confirm' => '/admin/configuracoes/duas-etapas/confirmar',
+            'qr-code' => '/admin/configuracoes/duas-etapas/qr-code',
+            'secret-key' => '/admin/configuracoes/duas-etapas/chave-secreta',
+            'recovery-codes' => '/admin/configuracoes/duas-etapas/codigos-de-recuperacao',
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

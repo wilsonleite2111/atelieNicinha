@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { Form, Head, router, usePage } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import { Form, Head, router } from '@inertiajs/vue3';
+import DangerZone from '@/components/DangerZone.vue';
+import FormActions from '@/components/FormActions.vue';
+import FormField from '@/components/FormField.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import SectionCard from '@/components/SectionCard.vue';
+import { Input } from '@/components/ui/input';
 import { destroy, edit, index, update } from '@/routes/categories';
-import type { Category, Team } from '@/types';
+import type { Category } from '@/types';
 
 type Props = {
     category: Category;
@@ -10,31 +15,31 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const page = usePage();
-
 defineOptions({
-    layout: (props: { currentTeam?: Team | null; category?: Category }) => ({
+    layout: (props: { category?: Category }) => ({
         breadcrumbs: [
             {
                 title: 'Categorias',
-                href: props.currentTeam ? index(props.currentTeam.slug) : '/',
+                href: index(),
             },
             {
                 title: props.category?.name ?? 'Editar categoria',
-                href:
-                    props.currentTeam && props.category
-                        ? edit([props.currentTeam.slug, props.category.id])
-                        : '/',
+                href: props.category ? edit(props.category.id) : '/',
             },
         ],
     }),
 });
 
 const confirmDelete = () => {
-    if (!confirm(`Tem certeza que deseja excluir "${props.category.name}"? Esta ação não pode ser desfeita.`)) {
+    if (
+        !confirm(
+            `Tem certeza que deseja excluir "${props.category.name}"? Esta ação não pode ser desfeita.`,
+        )
+    ) {
         return;
     }
-    router.visit(destroy([page.props.currentTeam!.slug, props.category.id]));
+
+    router.visit(destroy(props.category.id));
 };
 </script>
 
@@ -42,40 +47,32 @@ const confirmDelete = () => {
     <Head :title="`Editar: ${category.name}`" />
 
     <div class="flex flex-col gap-8 p-2">
-        <div>
-            <p class="text-xs tracking-[0.25em] uppercase text-muted-foreground">Edição</p>
-            <h1 class="font-['Cormorant_Garamond',serif] text-4xl font-light text-foreground">
-                {{ category.name }}
-            </h1>
-        </div>
+        <PageHeader eyebrow="Edição" :title="category.name" />
 
         <Form
-            :action="update.url([page.props.currentTeam!.slug, category.id])"
+            :action="update.url(category.id)"
             method="post"
-            class="max-w-lg"
+            class="flex max-w-lg flex-col gap-6"
             v-slot="{ errors, processing }"
         >
             <input type="hidden" name="_method" value="PATCH" />
 
-            <div class="rounded-xl border border-border bg-card p-6">
-                <h2 class="mb-5 font-['Cormorant_Garamond',serif] text-xl font-semibold text-foreground">
-                    Informações
-                </h2>
-
+            <SectionCard title="Informações">
                 <div class="flex flex-col gap-5">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="name" class="text-sm font-medium text-foreground">
-                            Nome <span class="text-destructive">*</span>
-                        </label>
-                        <input
+                    <FormField
+                        id="name"
+                        label="Nome"
+                        required
+                        :error="errors.name"
+                    >
+                        <Input
                             id="name"
                             name="name"
-                            :value="category.name"
+                            :default-value="category.name"
                             required
-                            class="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                            class="h-auto rounded-lg bg-background px-4 py-2.5"
                         />
-                        <InputError :message="errors.name" />
-                    </div>
+                    </FormField>
 
                     <div class="flex items-center gap-3">
                         <input
@@ -86,41 +83,24 @@ const confirmDelete = () => {
                             :checked="category.active"
                             class="h-4 w-4 rounded border-input text-primary focus:ring-ring/40"
                         />
-                        <label for="active" class="text-sm text-foreground">Categoria ativa</label>
+                        <label for="active" class="text-sm text-foreground"
+                            >Categoria ativa</label
+                        >
                     </div>
                 </div>
-            </div>
+            </SectionCard>
 
-            <div class="mt-6 flex items-center gap-4">
-                <button
-                    type="submit"
-                    :disabled="processing"
-                    class="rounded-full bg-primary px-8 py-2.5 text-xs tracking-widest uppercase text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
-                >
-                    Salvar alterações
-                </button>
-                <a
-                    :href="index(page.props.currentTeam!.slug).url"
-                    class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                    Cancelar
-                </a>
-            </div>
+            <FormActions
+                submit-label="Salvar alterações"
+                :cancel-href="index().url"
+                :processing="processing"
+            />
 
-            <!-- Danger Zone -->
-            <div class="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 p-6">
-                <p class="font-medium text-destructive">Excluir categoria</p>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    Esta ação não pode ser desfeita. Os produtos vinculados perderão a categoria.
-                </p>
-                <button
-                    type="button"
-                    class="mt-4 rounded-full border border-destructive px-6 py-2 text-xs tracking-widest uppercase text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
-                    @click="confirmDelete"
-                >
-                    Excluir categoria
-                </button>
-            </div>
+            <DangerZone
+                title="Excluir categoria"
+                description="Esta ação não pode ser desfeita. Os produtos vinculados perderão a categoria."
+                @confirm="confirmDelete"
+            />
         </Form>
     </div>
 </template>

@@ -10,7 +10,7 @@ class SaveCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $team = $this->route('current_team');
+        $team = $this->user()?->currentTeam;
 
         return $team !== null && Gate::check('create', [Category::class, $team]);
     }

@@ -22,10 +22,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { store as storeInvitation } from '@/routes/teams/invitations';
-import type { RoleOption, Team } from '@/types';
+import type { RoleOption } from '@/types';
 
 type Props = {
-    team: Team;
     availableRoles: RoleOption[];
     open: boolean;
 };
@@ -53,41 +52,43 @@ function handleOpenChange(value: boolean) {
         <DialogContent>
             <Form
                 :key="formKey"
-                v-bind="storeInvitation.form(props.team.slug)"
+                v-bind="storeInvitation.form()"
                 class="space-y-6"
                 v-slot="{ errors, processing }"
                 @success="emit('update:open', false)"
             >
                 <DialogHeader>
-                    <DialogTitle>Invite a team member</DialogTitle>
+                    <DialogTitle>Convidar membro</DialogTitle>
                     <DialogDescription>
-                        Send an invitation to join this team.
+                        Envie um convite para participar da equipe.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div class="grid gap-4">
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">E-mail</Label>
                         <Input
                             id="email"
                             name="email"
                             data-test="invite-email"
                             type="email"
-                            placeholder="colleague@example.com"
+                            placeholder="nome@exemplo.com"
                             required
                         />
                         <InputError :message="errors.email" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="role">Role</Label>
+                        <Label for="role">Perfil</Label>
                         <Select
                             v-model="inviteRole"
                             name="role"
                             data-test="invite-role"
                         >
                             <SelectTrigger class="w-full">
-                                <SelectValue placeholder="Select a role" />
+                                <SelectValue
+                                    placeholder="Selecione um perfil"
+                                />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -105,7 +106,7 @@ function handleOpenChange(value: boolean) {
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <Button variant="secondary"> Cancel </Button>
+                        <Button variant="secondary"> Cancelar </Button>
                     </DialogClose>
 
                     <Button
@@ -113,7 +114,7 @@ function handleOpenChange(value: boolean) {
                         data-test="invite-submit"
                         :disabled="processing"
                     >
-                        Send invitation
+                        Enviar convite
                     </Button>
                 </DialogFooter>
             </Form>

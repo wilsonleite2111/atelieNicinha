@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { create, destroy, edit, index } from '@/routes/products';
-import type { Product, Team } from '@/types';
+import type { Product } from '@/types';
 
 type Props = {
     products: Product[];
@@ -13,14 +13,12 @@ type Props = {
 
 const props = defineProps<Props>();
 
-const page = usePage();
-
 defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
+    layout: () => ({
         breadcrumbs: [
             {
                 title: 'Produtos',
-                href: props.currentTeam ? index(props.currentTeam.slug) : '/',
+                href: index(),
             },
         ],
     }),
@@ -31,7 +29,7 @@ const deletingId = ref<number | null>(null);
 
 const doSearch = () => {
     router.get(
-        index(page.props.currentTeam!.slug).url,
+        index().url,
         { search: searchQuery.value },
         { replace: true, preserveState: true },
     );
@@ -46,7 +44,7 @@ const confirmDelete = (product: Product) => {
 
     deletingId.value = product.id;
 
-    router.visit(destroy([page.props.currentTeam!.slug, product.id]), {
+    router.visit(destroy(product.id), {
         onFinish: () => {
             deletingId.value = null;
         },
@@ -69,7 +67,7 @@ const formatPrice = (price: string) =>
             </div>
             <a
                 v-if="canManageProducts"
-                :href="create(page.props.currentTeam!.slug).url"
+                :href="create().url"
                 data-test="new-product-button"
                 class="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs tracking-widest uppercase text-primary-foreground transition-colors hover:opacity-90"
             >
@@ -146,7 +144,7 @@ const formatPrice = (price: string) =>
                 <!-- Actions -->
                 <div v-if="canManageProducts" class="flex items-center gap-1 border-t border-border px-4 py-3">
                     <a
-                        :href="edit([page.props.currentTeam!.slug, product.id]).url"
+                        :href="edit(product.id).url"
                         data-test="product-edit-button"
                         class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     >

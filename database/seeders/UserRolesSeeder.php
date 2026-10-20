@@ -21,7 +21,7 @@ class UserRolesSeeder extends Seeder
         ]);
 
         $mainTeam = $owner->currentTeam;
-        $mainTeam->update(['is_store' => true]);
+        $mainTeam->update(['is_store' => true, 'whatsapp' => '5541995291049']);
 
         // Admin — perfil administrador (gerencia produtos e membros)
         $admin = User::factory()->create([
@@ -47,9 +47,9 @@ class UserRolesSeeder extends Seeder
         $this->command->table(
             ['Nome', 'E-mail', 'Perfil', 'Senha'],
             [
-                [$owner->name, $owner->email, 'Owner (administrador)', '123456789'],
-                [$admin->name, $admin->email, 'Admin (administrador)', '123456789'],
-                [$member->name, $member->email, 'Member (usuário)', '123456789'],
+                [$owner->name, $owner->email, 'Proprietário', '123456789'],
+                [$admin->name, $admin->email, 'Administrador', '123456789'],
+                [$member->name, $member->email, 'Membro', '123456789'],
             ],
         );
     }

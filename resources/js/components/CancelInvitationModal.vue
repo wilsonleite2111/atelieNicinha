@@ -12,10 +12,9 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { destroy as destroyInvitation } from '@/routes/teams/invitations';
-import type { Team, TeamInvitation } from '@/types';
+import type { TeamInvitation } from '@/types';
 
 type Props = {
-    team: Team;
     invitation: TeamInvitation | null;
     open: boolean;
 };
@@ -32,7 +31,7 @@ const cancelInvitation = () => {
         return;
     }
 
-    router.visit(destroyInvitation([props.team.slug, props.invitation.code]), {
+    router.visit(destroyInvitation(props.invitation.code), {
         onStart: () => (processing.value = true),
         onFinish: () => (processing.value = false),
         onSuccess: () => emit('update:open', false),
@@ -44,9 +43,9 @@ const cancelInvitation = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Cancel invitation</DialogTitle>
+                <DialogTitle>Cancelar convite</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to cancel the invitation for
+                    Tem certeza de que deseja cancelar o convite para
                     <strong>{{ props.invitation?.email }}</strong
                     >?
                 </DialogDescription>
@@ -54,7 +53,7 @@ const cancelInvitation = () => {
 
             <DialogFooter class="gap-2">
                 <DialogClose as-child>
-                    <Button variant="secondary"> Keep invitation </Button>
+                    <Button variant="secondary"> Manter convite </Button>
                 </DialogClose>
 
                 <Button
@@ -63,7 +62,7 @@ const cancelInvitation = () => {
                     :disabled="processing"
                     @click="cancelInvitation"
                 >
-                    Cancel invitation
+                    Cancelar convite
                 </Button>
             </DialogFooter>
         </DialogContent>
