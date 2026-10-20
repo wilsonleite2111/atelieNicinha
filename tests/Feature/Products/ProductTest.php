@@ -35,6 +35,36 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
+    public function test_products_can_be_filtered_by_category(): void
+    {
+        [$owner, $team] = $this->ownerWithTeam();
+
+        $rings = $team->categories()->create(['name' => 'Anéis', 'active' => true]);
+        $necklaces = $team->categories()->create(['name' => 'Colares', 'active' => true]);
+
+        Product::factory()->for($team)->create(['name' => 'Anel Rosa', 'category_id' => $rings->id]);
+        Product::factory()->for($team)->create(['name' => 'Colar Pétala', 'category_id' => $necklaces->id]);
+        Product::factory()->for($team)->create(['name' => 'Avulso', 'category_id' => null]);
+
+        $this->actingAs($owner)
+            ->get(route('products.index', ['category' => $rings->id]))
+            ->assertInertia(fn ($page) => $page
+                ->where('category', (string) $rings->id)
+                ->has('products', 1)
+                ->where('products.0.name', 'Anel Rosa')
+                ->has('categories', 2));
+
+        $this->actingAs($owner)
+            ->get(route('products.index', ['category' => 'none']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products', 1)
+                ->where('products.0.name', 'Avulso'));
+
+        $this->actingAs($owner)
+            ->get(route('products.index'))
+            ->assertInertia(fn ($page) => $page->has('products', 3));
+    }
+
     public function test_member_is_redirected_from_products_index(): void
     {
         [, $team, , $member] = $this->teamWithRoles();

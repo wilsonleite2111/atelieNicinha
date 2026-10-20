@@ -22,11 +22,18 @@ class ProductController extends Controller
         Gate::authorize('viewAny', [Product::class, $team]);
 
         $search = (string) $request->query('search', '');
+        $category = (string) $request->query('category', '');
 
         $query = $team->products()->orderBy('name');
 
         if ($search) {
             $query->where('name', 'ilike', "%{$search}%");
+        }
+
+        if ($category === 'none') {
+            $query->whereNull('category_id');
+        } elseif (ctype_digit($category)) {
+            $query->where('category_id', (int) $category);
         }
 
         $products = $query->get()->map(fn (Product $product) => [
@@ -41,6 +48,12 @@ class ProductController extends Controller
         return Inertia::render('products/Index', [
             'products' => $products,
             'search' => $search,
+            'category' => $category,
+            'categories' => $team->categories()
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])
+                ->values(),
             'canManageProducts' => $request->user()->hasTeamPermission($team, TeamPermission::ManageProducts),
         ]);
     }

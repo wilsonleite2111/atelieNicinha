@@ -2,13 +2,18 @@
 import { Head, router } from '@inertiajs/vue3';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { NativeSelect } from '@/components/ui/native-select';
 import { create, destroy, edit, index } from '@/routes/products';
 import type { Product } from '@/types';
+
+type CategoryOption = { id: number; name: string };
 
 type Props = {
     products: Product[];
     canManageProducts: boolean;
     search: string;
+    category: string;
+    categories: CategoryOption[];
 };
 
 const props = defineProps<Props>();
@@ -25,17 +30,21 @@ defineOptions({
 });
 
 const searchQuery = ref(props.search ?? '');
+const categoryFilter = ref(props.category ?? '');
 const deletingId = ref<number | null>(null);
 
 const doSearch = () => {
     router.get(
         index().url,
-        { search: searchQuery.value },
+        {
+            search: searchQuery.value || undefined,
+            category: categoryFilter.value || undefined,
+        },
         { replace: true, preserveState: true },
     );
 };
 
-watch(searchQuery, doSearch);
+watch([searchQuery, categoryFilter], doSearch);
 
 const confirmDelete = (product: Product) => {
     if (!confirm(`Tem certeza que deseja excluir "${product.name}"? Esta ação não pode ser desfeita.`)) {
@@ -76,22 +85,41 @@ const formatPrice = (price: string) =>
             </a>
         </div>
 
-        <!-- Search -->
-        <form @submit.prevent class="relative">
-            <Search class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-                v-model="searchQuery"
-                type="search"
-                placeholder="Buscar por nome…"
-                class="w-full rounded-full border border-border bg-card py-3 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 sm:max-w-sm"
-            />
+        <!-- Filters -->
+        <form @submit.prevent class="flex flex-col gap-3 sm:flex-row">
+            <div class="relative sm:w-full sm:max-w-sm">
+                <Search class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                    v-model="searchQuery"
+                    type="search"
+                    placeholder="Buscar por nome…"
+                    class="w-full rounded-full border border-border bg-card py-3 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+                />
+            </div>
+            <NativeSelect
+                @change="categoryFilter = ($event.target as HTMLSelectElement).value"
+                aria-label="Filtrar por categoria"
+                data-test="category-filter"
+                class="h-auto rounded-full border-border bg-card px-4 py-3 sm:w-56"
+            >
+                <option value="" :selected="categoryFilter === ''">Todas as categorias</option>
+                <option
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    :value="String(cat.id)"
+                    :selected="categoryFilter === String(cat.id)"
+                >
+                    {{ cat.name }}
+                </option>
+                <option value="none" :selected="categoryFilter === 'none'">Sem categoria</option>
+            </NativeSelect>
         </form>
 
         <!-- Empty state -->
         <div v-if="products.length === 0" class="flex flex-col items-center gap-3 py-16 text-center">
             <span class="text-4xl text-muted-foreground/40">✦</span>
             <p class="font-['Cormorant_Garamond',serif] text-xl font-light text-muted-foreground">
-                {{ search ? 'Nenhum produto encontrado para a busca.' : 'Nenhum produto cadastrado ainda.' }}
+                {{ search || category ? 'Nenhum produto encontrado com esses filtros.' : 'Nenhum produto cadastrado ainda.' }}
             </p>
         </div>
 
